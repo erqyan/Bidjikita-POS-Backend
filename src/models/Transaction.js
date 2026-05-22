@@ -8,24 +8,29 @@ const sequelize = require(
 
 const User = require("./User");
 const Shift = require("./Shift");
+const Order = require("./Order");
 
 const Transaction = sequelize.define(
   "Transaction",
   {
     invoice_number: {
       type: DataTypes.STRING,
-      allowNull: false,
       unique: true,
+      allowNull: false,
     },
 
     transaction_date: {
       type: DataTypes.DATE,
-      defaultValue: DataTypes.NOW,
+      defaultValue:
+        DataTypes.NOW,
     },
 
     total_amount: {
-      type: DataTypes.DECIMAL(10, 2),
-      defaultValue: 0,
+      type: DataTypes.DECIMAL(
+        10,
+        2
+      ),
+      allowNull: false,
     },
 
     payment_method: {
@@ -42,9 +47,10 @@ const Transaction = sequelize.define(
       type: DataTypes.ENUM(
         "pending",
         "paid",
-        "cancelled"
+        "failed"
       ),
-      defaultValue: "paid",
+      defaultValue:
+        "pending",
     },
 
     notes: {
@@ -53,7 +59,7 @@ const Transaction = sequelize.define(
   }
 );
 
-// RELATION
+// USER
 User.hasMany(Transaction, {
   foreignKey: "user_id",
 });
@@ -62,12 +68,22 @@ Transaction.belongsTo(User, {
   foreignKey: "user_id",
 });
 
+// SHIFT
 Shift.hasMany(Transaction, {
   foreignKey: "shift_id",
 });
 
 Transaction.belongsTo(Shift, {
   foreignKey: "shift_id",
+});
+
+// ORDER
+Order.hasOne(Transaction, {
+  foreignKey: "order_id",
+});
+
+Transaction.belongsTo(Order, {
+  foreignKey: "order_id",
 });
 
 module.exports = Transaction;

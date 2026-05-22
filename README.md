@@ -15,8 +15,11 @@ Project ini mendukung:
 ✅ Category Management  
 ✅ Product & Variant Management  
 ✅ Shift Management  
+✅ Raw Material Management  
+✅ Recipe Management  
+✅ Order Management  
 ✅ Transaction System  
-✅ Multi-item Transaction  
+✅ Automatic Inventory Reduction  
 ✅ JWT Security  
 ✅ Professional Relational Database Structure  
 
@@ -52,6 +55,9 @@ bidjikita-pos-backend/
 │   │   ├── productController.js
 │   │   ├── variantController.js
 │   │   ├── shiftController.js
+│   │   ├── rawMaterialController.js
+│   │   ├── recipeController.js
+│   │   ├── orderController.js
 │   │   └── transactionController.js
 │   │
 │   ├── middleware/
@@ -66,8 +72,12 @@ bidjikita-pos-backend/
 │   │   ├── ProductVariant.js
 │   │   ├── Shift.js
 │   │   ├── ShiftUser.js
-│   │   ├── Transaction.js
-│   │   └── TransactionDetail.js
+│   │   ├── RawMaterial.js
+│   │   ├── Recipe.js
+│   │   ├── RecipeDetail.js
+│   │   ├── Order.js
+│   │   ├── OrderDetail.js
+│   │   └── Transaction.js
 │   │
 │   ├── routes/
 │   │   ├── authRoutes.js
@@ -75,7 +85,13 @@ bidjikita-pos-backend/
 │   │   ├── productRoutes.js
 │   │   ├── variantRoutes.js
 │   │   ├── shiftRoutes.js
+│   │   ├── rawMaterialRoutes.js
+│   │   ├── recipeRoutes.js
+│   │   ├── orderRoutes.js
 │   │   └── transactionRoutes.js
+│   │
+│   ├── services/
+│   │   └── stockService.js
 │   │
 │   └── app.js
 │
@@ -178,7 +194,16 @@ Project menggunakan:
 | Role | Access |
 |---|---|
 | Admin | Full Access |
-| Cashier | Transaction Access |
+| Cashier | Order & Transaction |
+
+---
+
+# 📮 Postman Collection
+
+API Collection tersedia di:
+
+🔗
+https://material-architect-13385944-9945002.postman.co/workspace/REGIANA-HERMAWAN's-Workspace~c4c86998-0917-4a17-834d-92736501cdf9/collection/50411160-d7ab077d-9bcf-409a-8a9b-561d05fcea3b?action=share&creator=50411160
 
 ---
 
@@ -192,129 +217,12 @@ http://localhost:5000/api
 
 ---
 
-# 📮 Postman Collection
-
-API documentation dan testing endpoint tersedia melalui Postman Collection berikut:
-
-🔗 Postman Collection:
-
-[Bidjikita POS Postman Collection](https://material-architect-13385944-9945002.postman.co/workspace/REGIANA-HERMAWAN's-Workspace~c4c86998-0917-4a17-834d-92736501cdf9/collection/50411160-d7ab077d-9bcf-409a-8a9b-561d05fcea3b?action=share&creator=50411160&utm_source=chatgpt.com)
-
----
-
-## Collection Includes
-
-✅ Authentication Endpoints  
-✅ Category CRUD  
-✅ Product CRUD  
-✅ Variant CRUD  
-✅ Shift CRUD  
-✅ Transaction CRUD  
-✅ JWT Authorization Example  
-✅ Example Request Body  
-✅ Protected Route Testing  
-
----
-
-## How to Use
-
-### 1. Open Collection Link
-
-Klik link Postman Collection di atas.
-
----
-
-### 2. Import Collection
-
-Klik:
-
-```text
-Run in Postman
-```
-
-atau:
-
-```text
-Fork Collection
-```
-
----
-
-### 3. Set Environment Variables
-
-Gunakan:
-
-| Variable | Value |
-|---|---|
-| base_url | http://localhost:5000/api |
-| token | JWT_TOKEN |
-
----
-
-### 4. Login First
-
-Gunakan endpoint:
-
-```http
-POST /auth/login
-```
-
-Copy token JWT dari response login.
-
----
-
-### 5. Paste JWT Token
-
-Masukkan ke variable:
-
-```text
-token
-```
-
----
-
-### 6. Test All Endpoints
-
-Sekarang semua endpoint siap digunakan.
-
----
-
 # 🔑 Auth Endpoints
 
-## Register
-
-```http
-POST /auth/register
-```
-
-### Body
-
-```json
-{
-  "full_name": "Admin",
-  "username": "admin",
-  "password": "123456",
-  "phone_number": "08123456789",
-  "role_id": 1
-}
-```
-
----
-
-## Login
-
-```http
-POST /auth/login
-```
-
-### Body
-
-```json
-{
-  "username": "admin",
-  "password": "123456"
-}
-```
+| Method | Endpoint |
+|---|---|
+| POST | /auth/register |
+| POST | /auth/login |
 
 ---
 
@@ -365,39 +273,124 @@ POST /auth/login
 
 ---
 
+# 🧱 Raw Material Endpoints
+
+| Method | Endpoint | Access |
+|---|---|---|
+| GET | /raw-materials | Login User |
+| GET | /raw-materials/:id | Login User |
+| POST | /raw-materials | Admin |
+| PUT | /raw-materials/:id | Admin |
+| DELETE | /raw-materials/:id | Admin |
+
+---
+
+# 📖 Recipe Endpoints
+
+| Method | Endpoint | Access |
+|---|---|---|
+| GET | /recipes | Login User |
+| GET | /recipes/:id | Login User |
+| POST | /recipes | Admin |
+| PUT | /recipes/:id | Admin |
+| DELETE | /recipes/:id | Admin |
+
+---
+
+# 🧾 Order Endpoints
+
+| Method | Endpoint | Access |
+|---|---|---|
+| GET | /orders | Admin & Cashier |
+| GET | /orders/:id | Admin & Cashier |
+| POST | /orders | Admin & Cashier |
+| PUT | /orders/:id | Admin & Cashier |
+| DELETE | /orders/:id | Admin & Cashier |
+
+---
+
 # 💳 Transaction Endpoints
 
 | Method | Endpoint | Access |
 |---|---|---|
-| GET | /transactions | Login User |
-| GET | /transactions/:id | Login User |
+| GET | /transactions | Admin & Cashier |
+| GET | /transactions/:id | Admin & Cashier |
 | POST | /transactions | Admin & Cashier |
 | PUT | /transactions/:id | Admin & Cashier |
 | DELETE | /transactions/:id | Admin & Cashier |
 
 ---
 
-# 🧾 Example Transaction Request
+# ☕ Inventory Flow
+
+```text
+Raw Material
+      ↓
+Recipe
+      ↓
+Order
+      ↓
+Stock Automatically Reduced
+      ↓
+Transaction
+```
+
+---
+
+# 🧾 Example Order Request
 
 ```json
 {
-  "shift_id": 1,
-  "payment_method": "cash",
-  "payment_status": "paid",
+  "shift_id": 5,
   "notes": "Customer dine in",
 
   "items": [
     {
-      "product_id": 1,
-      "variant_id": 1,
-      "quantity": 2
+      "product_id": 6,
+      "variant_id": 4,
+      "quantity": 3
+    }
+  ]
+}
+```
+
+---
+
+# 📖 Example Recipe Request
+
+```json
+{
+  "recipe_name": "Americano Medium",
+  "product_id": 6,
+  "variant_id": 4,
+
+  "materials": [
+    {
+      "raw_material_id": 6,
+      "quantity": 20
     },
     {
-      "product_id": 2,
-      "variant_id": 3,
+      "raw_material_id": 5,
+      "quantity": 200
+    },
+    {
+      "raw_material_id": 4,
       "quantity": 1
     }
   ]
+}
+```
+
+---
+
+# 🧱 Example Raw Material Request
+
+```json
+{
+  "material_name": "Robusta",
+  "unit": "gram",
+  "stock": 5000,
+  "minimum_stock": 500
 }
 ```
 
@@ -416,6 +409,14 @@ products
    ↓
 product_variants
 
+products
+   ↓
+recipes
+   ↓
+recipedetails
+   ↓
+raw_materials
+
 shifts
    ↓
 shift_users
@@ -424,13 +425,17 @@ users
 
 users
    ↓
-transactions
+orders
    ↓
-transaction_details
+order_details
    ↓
 products
    ↓
 product_variants
+
+orders
+   ↓
+transactions
 ```
 
 ---
@@ -439,10 +444,12 @@ product_variants
 
 ✅ Password Hashing using bcryptjs  
 ✅ JWT Authentication  
-✅ Admin Authorization Middleware  
-✅ Input Validation  
-✅ Duplicate Data Prevention  
+✅ Role Based Authorization  
+✅ Duplicate Validation  
 ✅ Foreign Key Validation  
+✅ Inventory Protection  
+✅ Recipe Protection  
+✅ Protected Raw Material Deletion  
 
 ---
 
@@ -458,11 +465,11 @@ npm run dev
 
 # 📌 Future Improvements
 
-- Payment Table
+- Payment Gateway
 - Receipt Printing
 - Dashboard Analytics
-- Stock Management
 - Sales Reports
+- Stock Notifications
 - Sequelize Migration
 - Refresh Token Authentication
 - Soft Delete

@@ -8,6 +8,9 @@ const categoryRoutes = require("./routes/categoryRoutes");
 const variantRoutes = require("./routes/variantRoutes");
 const shiftRoutes = require("./routes/shiftRoutes");
 const transactionRoutes = require("./routes/transactionRoutes");
+const rawMaterialRoutes = require("./routes/rawMaterialRoutes");
+const recipeRoutes = require("./routes/recipeRoutes");
+const orderRoutes = require("./routes/orderRoutes");
 
 const app = express();
 
@@ -21,6 +24,9 @@ app.use("/api/categories", categoryRoutes);
 app.use("/api/variants", variantRoutes);
 app.use("/api/shifts", shiftRoutes); 
 app.use("/api/transactions",transactionRoutes);
+app.use("/api/raw-materials",rawMaterialRoutes);
+app.use("/api/recipes", recipeRoutes);
+app.use("/api/orders", orderRoutes);
 
 app.get("/", (req, res) => {
   res.json({

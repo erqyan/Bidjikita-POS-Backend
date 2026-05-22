@@ -2,19 +2,21 @@ const Transaction = require(
   "../models/Transaction"
 );
 
-const TransactionDetail =
-  require(
-    "../models/TransactionDetail"
-  );
+const Order = require(
+  "../models/Order"
+);
+
+const OrderDetail = require(
+  "../models/OrderDetail"
+);
 
 const Product = require(
   "../models/Product"
 );
 
-const ProductVariant =
-  require(
-    "../models/ProductVariant"
-  );
+const ProductVariant = require(
+  "../models/ProductVariant"
+);
 
 const User = require(
   "../models/User"
@@ -24,29 +26,119 @@ const Shift = require(
   "../models/Shift"
 );
 
+// reusable include
+const transactionInclude = [
+  {
+    model: User,
+    attributes: [
+      "id",
+      "full_name",
+      "username",
+    ],
+  },
+
+  {
+    model: Shift,
+    attributes: [
+      "id",
+      "shift_name",
+      "shift_date",
+      "status",
+    ],
+  },
+
+  {
+    model: Order,
+
+    attributes: [
+      "id",
+      "order_number",
+      "total_amount",
+      "order_status",
+      "notes",
+      "createdAt",
+    ],
+
+    include: [
+      {
+        model: OrderDetail,
+
+        attributes: [
+          "id",
+          "quantity",
+          "price",
+          "subtotal",
+        ],
+
+        include: [
+          {
+            model: Product,
+
+            attributes: [
+              "id",
+              "product_name",
+              "base_price",
+            ],
+          },
+
+          {
+            model:
+              ProductVariant,
+
+            attributes: [
+              "id",
+              "variant_name",
+              "additional_price",
+            ],
+          },
+        ],
+      },
+    ],
+  },
+];
+
 // CREATE TRANSACTION
 exports.createTransaction =
   async (req, res) => {
     try {
 
       const {
-        shift_id,
+        order_id,
         payment_method,
         payment_status,
         notes,
-        items,
       } = req.body;
 
-      // cek shift
-      const shift =
-        await Shift.findByPk(
-          shift_id
+      // cek order
+      const order =
+        await Order.findByPk(
+          order_id,
+          {
+            include: [
+              OrderDetail,
+            ],
+          }
         );
 
-      if (!shift) {
+      if (!order) {
         return res.status(404).json({
           message:
-            "Shift not found",
+            "Order not found",
+        });
+      }
+
+      // cek duplicate transaction
+      const existingTransaction =
+        await Transaction.findOne({
+          where: {
+            order_id,
+          },
+        });
+
+      if (existingTransaction) {
+        return res.status(400).json({
+          message:
+            "Transaction already exists",
         });
       }
 
@@ -54,125 +146,55 @@ exports.createTransaction =
       const invoice_number =
         "INV-" + Date.now();
 
-      // create transaction sementara
+      // create transaction
       const transaction =
         await Transaction.create({
           invoice_number,
+
           transaction_date:
             new Date(),
-          total_amount: 0,
+
+          total_amount:
+            order.total_amount,
+
           payment_method,
+
           payment_status,
+
           notes,
+
           user_id:
             req.user.id,
-          shift_id,
+
+          shift_id:
+            order.shift_id,
+
+          order_id,
         });
 
-      let total_amount = 0;
-
-      // loop items
-      for (const item of items) {
-
-        const product =
-          await Product.findByPk(
-            item.product_id
-          );
-
-        if (!product) {
-          return res.status(404).json({
-            message:
-              "Product not found",
-          });
-        }
-
-        let variant_price = 0;
-
-        let variant = null;
-
-        // cek variant
-        if (item.variant_id) {
-
-          variant =
-            await ProductVariant.findByPk(
-              item.variant_id
-            );
-
-          if (!variant) {
-            return res.status(404).json({
-              message:
-                "Variant not found",
-            });
-          }
-
-          variant_price =
-            Number(
-              variant.additional_price
-            );
-        }
-
-        const product_price =
-          Number(
-            product.base_price
-          );
-
-        // subtotal
-        const subtotal =
-          (
-            product_price +
-            variant_price
-          ) * item.quantity;
-
-        total_amount += subtotal;
-
-        // simpan detail
-        await TransactionDetail.create(
-          {
-            transaction_id:
-              transaction.id,
-
-            product_id:
-              product.id,
-
-            variant_id:
-              variant
-                ? variant.id
-                : null,
-
-            quantity:
-              item.quantity,
-
-            product_price,
-
-            variant_price,
-
-            subtotal,
-          }
-        );
-      }
-
-      // update total
-      await transaction.update({
-        total_amount,
+      // update order status
+      await order.update({
+        order_status:
+          "completed",
       });
 
-      // ambil full data
+      // get safe result
       const result =
         await Transaction.findByPk(
           transaction.id,
           {
-            include: [
-              User,
-              Shift,
-              {
-                model:
-                  TransactionDetail,
-                include: [
-                  Product,
-                  ProductVariant,
-                ],
-              },
+            attributes: [
+              "id",
+              "invoice_number",
+              "transaction_date",
+              "total_amount",
+              "payment_method",
+              "payment_status",
+              "notes",
             ],
+
+            include:
+              transactionInclude,
           }
         );
 
@@ -192,28 +214,34 @@ exports.createTransaction =
     }
   };
 
-  // GET ALL TRANSACTIONS
+// GET ALL TRANSACTIONS
 exports.getTransactions =
   async (req, res) => {
     try {
 
       const transactions =
         await Transaction.findAll({
-          include: [
-            User,
-            Shift,
-            {
-              model:
-                TransactionDetail,
-              include: [
-                Product,
-                ProductVariant,
-              ],
-            },
+          attributes: [
+            "id",
+            "invoice_number",
+            "transaction_date",
+            "total_amount",
+            "payment_method",
+            "payment_status",
+            "notes",
+          ],
+
+          include:
+            transactionInclude,
+
+          order: [
+            ["createdAt", "DESC"],
           ],
         });
 
-      res.json(transactions);
+      res.json(
+        transactions
+      );
 
     } catch (error) {
 
@@ -234,18 +262,18 @@ exports.getTransactionById =
         await Transaction.findByPk(
           req.params.id,
           {
-            include: [
-              User,
-              Shift,
-              {
-                model:
-                  TransactionDetail,
-                include: [
-                  Product,
-                  ProductVariant,
-                ],
-              },
+            attributes: [
+              "id",
+              "invoice_number",
+              "transaction_date",
+              "total_amount",
+              "payment_method",
+              "payment_status",
+              "notes",
             ],
+
+            include:
+              transactionInclude,
           }
         );
 
@@ -297,7 +325,28 @@ exports.updateTransaction =
         notes,
       });
 
-      res.json(transaction);
+      const updatedTransaction =
+        await Transaction.findByPk(
+          transaction.id,
+          {
+            attributes: [
+              "id",
+              "invoice_number",
+              "transaction_date",
+              "total_amount",
+              "payment_method",
+              "payment_status",
+              "notes",
+            ],
+
+            include:
+              transactionInclude,
+          }
+        );
+
+      res.json(
+        updatedTransaction
+      );
 
     } catch (error) {
 

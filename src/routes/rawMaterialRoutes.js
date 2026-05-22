@@ -2,8 +2,8 @@ const express = require("express");
 
 const router = express.Router();
 
-const transactionController = require(
-  "../controllers/transactionController"
+const rawMaterialController = require(
+  "../controllers/rawMaterialController"
 );
 
 const authMiddleware = require(
@@ -14,44 +14,42 @@ const adminMiddleware = require(
   "../middleware/adminMiddleware"
 );
 
-// CREATE TRANSACTION
-// kasir & admin
+// CREATE
 router.post(
   "/",
   authMiddleware,
-  transactionController.createTransaction
+  adminMiddleware,
+  rawMaterialController.createRawMaterial
 );
 
-// GET ALL TRANSACTIONS
+// GET ALL
 router.get(
   "/",
   authMiddleware,
-  transactionController.getTransactions
+  rawMaterialController.getRawMaterials
 );
 
-// GET TRANSACTION BY ID
+// GET BY ID
 router.get(
   "/:id",
   authMiddleware,
-  transactionController.getTransactionById
+  rawMaterialController.getRawMaterialById
 );
 
-// UPDATE TRANSACTION
-// admin only
+// UPDATE
 router.put(
   "/:id",
   authMiddleware,
   adminMiddleware,
-  transactionController.updateTransaction
+  rawMaterialController.updateRawMaterial
 );
 
-// DELETE TRANSACTION
-// admin only
+// DELETE
 router.delete(
   "/:id",
   authMiddleware,
   adminMiddleware,
-  transactionController.deleteTransaction
+  rawMaterialController.deleteRawMaterial
 );
 
 module.exports = router;

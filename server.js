@@ -5,7 +5,6 @@ const sequelize = require("./src/config/database");
 
 require("./src/models/ShiftUser");
 require("./src/models/Transaction");
-require("./src/models/TransactionDetail");
 
 const PORT = process.env.PORT || 5000;
 
