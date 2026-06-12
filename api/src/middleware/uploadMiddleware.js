@@ -1,10 +1,16 @@
 const multer = require("multer");
 const path = require("path");
 const crypto = require("crypto");
+const fs = require("fs");
 
 const UPLOAD_DIR = path.join(__dirname, "../../uploads/products");
 const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp", "image/gif"];
 const MAX_SIZE_MB = 5;
+
+// Ensure directory exists
+if (!fs.existsSync(UPLOAD_DIR)) {
+  fs.mkdirSync(UPLOAD_DIR, { recursive: true });
+}
 
 const storage = multer.diskStorage({
   destination: (_req, _file, cb) => {
@@ -58,7 +64,6 @@ const uploadProductImage = (req, res, next) => {
 const BUNDLE_UPLOAD_DIR = path.join(__dirname, "../../uploads/bundles");
 
 // Ensure directory exists
-const fs = require("fs");
 if (!fs.existsSync(BUNDLE_UPLOAD_DIR)) {
   fs.mkdirSync(BUNDLE_UPLOAD_DIR, { recursive: true });
 }
