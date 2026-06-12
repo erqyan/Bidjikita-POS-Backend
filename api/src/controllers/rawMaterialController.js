@@ -17,6 +17,17 @@ exports.createRawMaterial = async (req, res) => {
         .json({ message: "Material name and unit are required" });
     }
 
+    if (material_name.length > 255) {
+      return res.status(400).json({
+        message: "Nama bahan baku maksimal 255 karakter",
+      });
+    }
+    if (unit && unit.length > 255) {
+      return res.status(400).json({
+        message: "Satuan maksimal 255 karakter",
+      });
+    }
+
     const existing = await RawMaterial.findOne({ where: { material_name } });
     if (existing) {
       return res.status(400).json({ message: "Material already exists" });
@@ -71,6 +82,13 @@ exports.updateRawMaterial = async (req, res) => {
 
     const { material_name, unit, stock, minimum_stock, cost_per_unit } =
       req.body;
+
+    if (material_name && material_name.length > 255) {
+      return res.status(400).json({ message: "Nama bahan baku maksimal 255 karakter" });
+    }
+    if (unit && unit.length > 255) {
+      return res.status(400).json({ message: "Satuan maksimal 255 karakter" });
+    }
 
     // Check duplicate name (excluding self)
     if (material_name && material_name !== material.material_name) {

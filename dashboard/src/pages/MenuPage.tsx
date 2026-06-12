@@ -79,7 +79,7 @@ const ingredientSchema = z.object({
 
 const variantSchema = z.object({
   variant_name: z.string().optional().default(""),
-  price: z.coerce.number().min(0, "Harga wajib diisi"),
+  price: z.coerce.number().min(1, "Harga jual wajib diisi"),
   overhead_cost: z.coerce.number().min(0).default(0),
   ingredients: z
     .array(ingredientSchema)
@@ -185,7 +185,7 @@ function VariantCard({
   // to maintain the target profit margin.
   useEffect(() => {
     const m = Number(targetMargin);
-    if (m > 0 && m < 100 && totalCost > 0) {
+    if (m >= 0 && m < 100 && totalCost > 0) {
       const autoPrice = Math.ceil(totalCost / (1 - m / 100));
       setValue(`${prefix}.price`, autoPrice, { shouldValidate: true });
     }
@@ -276,14 +276,14 @@ function VariantCard({
       {totalCost > 0 && (
         <div className="rounded-xl border border-amber-200 bg-amber-50 p-3">
           <p className="text-xs font-semibold text-amber-800 mb-2">
-            Target Keuntungan
+            Target Margin Keuntungan
           </p>
           <div className="flex flex-wrap items-center gap-3">
             <div className="flex items-center gap-1.5">
               <input
                 type="number"
-                min="1"
-                max="99"
+                min="0"
+                max="100"
                 step="any"
                 placeholder="Mis. 60"
                 value={targetMargin}
@@ -291,7 +291,7 @@ function VariantCard({
                   const val = e.target.value;
                   setTargetMargin(val);
                   const m = Number(val);
-                  if (m > 0 && m < 100 && totalCost > 0) {
+                  if (m >= 0 && m < 100 && totalCost > 0) {
                     const autoPrice = Math.ceil(totalCost / (1 - m / 100));
                     setValue(`${prefix}.price`, autoPrice, { shouldValidate: true });
                   }
@@ -301,20 +301,33 @@ function VariantCard({
               <span className="text-sm font-semibold text-amber-800">%</span>
               <span className="text-xs text-amber-600 ml-1">keuntungan</span>
             </div>
-            {Number(targetMargin) > 0 && Number(targetMargin) < 100 && totalCost > 0 && (
-              <div className="flex items-center gap-2 text-sm">
-                <span className="text-amber-400">→</span>
-                <span className="font-bold text-amber-800">
-                  Harga jual:{" "}
-                  <span className="text-base">
-                    {formatCurrency(Math.ceil(totalCost / (1 - Number(targetMargin) / 100)))}
+            {Number(targetMargin) > 0 && Number(targetMargin) < 100 && totalCost > 0 && (() => {
+              const m = Number(targetMargin);
+              const autoPrice = Math.ceil(totalCost / (1 - m / 100));
+              const multiplier = (autoPrice / totalCost).toFixed(1);
+              return (
+                <div className="flex items-center gap-2 text-sm">
+                  <span className="text-amber-400">→</span>
+                  <span className="font-bold text-amber-800">
+                    Harga jual:{" "}
+                    <span className="text-base">
+                      {formatCurrency(autoPrice)}
+                    </span>
+                    <span className="text-xs font-normal text-amber-600 ml-1">
+                      ({multiplier}x biaya)
+                    </span>
                   </span>
-                </span>
-              </div>
-            )}
+                </div>
+              );
+            })()}
           </div>
+          {Number(targetMargin) > 70 && Number(targetMargin) < 100 && (
+            <div className="mt-2 rounded-lg bg-red-50 border border-red-200 p-2 text-xs text-red-700">
+              Perhatian: Margin di atas 70% menghasilkan harga jual yang sangat tinggi ({Math.ceil(totalCost / (1 - Number(targetMargin) / 100)) / totalCost}x lipat biaya). Pastikan harga ini sesuai dengan pasar.
+            </div>
+          )}
           <p className="text-xs text-amber-600 mt-1.5">
-            Harga jual diperbarui otomatis saat Anda mengubah target atau menambah bahan.
+            Margin 50% = harga jual 2x lipat dari biaya produksi. Harga diperbarui otomatis saat target atau bahan berubah.
           </p>
         </div>
       )}
@@ -1095,7 +1108,7 @@ function MenuItemsTab() {
 // ──────────────────────────────────────────────────────────────────────────────
 
 const catSchema = z.object({
-  category_name: z.string().min(1, "Nama kategori wajib diisi"),
+  category_name: z.string().trim().min(1, "Nama kategori wajib diisi").max(255, "Nama kategori maksimal 255 karakter"),
 });
 type CatForm = z.infer<typeof catSchema>;
 

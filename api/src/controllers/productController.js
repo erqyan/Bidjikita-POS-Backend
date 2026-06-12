@@ -122,7 +122,7 @@ exports.createProduct = async (req, res) => {
             {
               model: VariantIngredient,
               include: [
-                { model: RawMaterial, attributes: ["id", "material_name", "unit", "cost_per_unit"] },
+                { model: RawMaterial, attributes: ["id", "material_name", "unit", "cost_per_unit", "stock", "minimum_stock"] },
               ],
             },
           ],
@@ -149,7 +149,7 @@ exports.getProducts = async (req, res) => {
             {
               model: VariantIngredient,
               include: [
-                { model: RawMaterial, attributes: ["id", "material_name", "unit", "cost_per_unit"] },
+                { model: RawMaterial, attributes: ["id", "material_name", "unit", "cost_per_unit", "stock", "minimum_stock"] },
               ],
             },
           ],
@@ -157,7 +157,24 @@ exports.getProducts = async (req, res) => {
       ],
       order: [["product_name", "ASC"]],
     });
-    res.json(products);
+    // Enrich each product with a low_stock flag
+    const enriched = products.map((p) => {
+      const json = p.toJSON();
+      let lowStock = false;
+      for (const v of json.ProductVariants || []) {
+        for (const ing of v.VariantIngredients || []) {
+          const mat = ing.RawMaterial;
+          if (mat && Number(mat.stock) <= Number(mat.minimum_stock)) {
+            lowStock = true;
+            break;
+          }
+        }
+        if (lowStock) break;
+      }
+      json.low_stock = lowStock;
+      return json;
+    });
+    res.json(enriched);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -175,7 +192,7 @@ exports.getProductById = async (req, res) => {
             {
               model: VariantIngredient,
               include: [
-                { model: RawMaterial, attributes: ["id", "material_name", "unit", "cost_per_unit"] },
+                { model: RawMaterial, attributes: ["id", "material_name", "unit", "cost_per_unit", "stock", "minimum_stock"] },
               ],
             },
           ],
@@ -348,7 +365,7 @@ exports.updateProduct = async (req, res) => {
             {
               model: VariantIngredient,
               include: [
-                { model: RawMaterial, attributes: ["id", "material_name", "unit", "cost_per_unit"] },
+                { model: RawMaterial, attributes: ["id", "material_name", "unit", "cost_per_unit", "stock", "minimum_stock"] },
               ],
             },
           ],

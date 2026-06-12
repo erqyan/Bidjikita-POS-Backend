@@ -39,9 +39,9 @@ import { formatCurrency, formatDateTime } from "@/lib/utils";
 import { useDebounce } from "@/hooks/useDebounce";
 
 const schema = z.object({
-  material_name: z.string().min(1, "Nama bahan wajib diisi"),
-  unit: z.string().min(1, "Satuan wajib diisi"),
-  cost_per_unit: z.coerce.number().min(0, "Harga/satuan tidak boleh negatif"),
+  material_name: z.string().min(1, "Nama bahan wajib diisi").max(255, "Nama bahan maksimal 255 karakter"),
+  unit: z.string().min(1, "Satuan wajib diisi").max(255, "Satuan maksimal 255 karakter"),
+  cost_per_unit: z.coerce.number().min(1, "Harga per satuan wajib diisi"),
   stock: z.coerce.number().min(0, "Stok tidak boleh negatif"),
   minimum_stock: z.coerce.number().min(0, "Stok minimum tidak boleh negatif"),
 });
