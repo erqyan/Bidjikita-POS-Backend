@@ -19,7 +19,12 @@ const userRoutes = require("./routes/userRoutes");
 const app = express();
 
 // Security
-app.use(helmet());
+app.use(
+  helmet({
+    contentSecurityPolicy: false,
+    crossOriginResourcePolicy: { policy: "cross-origin" },
+  })
+);
 app.use(cors({ origin: process.env.CORS_ORIGIN || "*" }));
 
 // Body parsing with size limit

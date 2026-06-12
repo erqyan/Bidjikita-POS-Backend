@@ -50,7 +50,7 @@ export default function LoginPage() {
           <h1 className="text-4xl font-bold text-white mb-3">Bidjikita</h1>
           <p className="text-amber-400 text-lg font-medium mb-4">Admin Dashboard</p>
           <p className="text-slate-400 text-sm max-w-xs leading-relaxed">
-            Kelola bisnis kopi Anda dengan mudah. Monitor penjualan, stok bahan, dan performa tim secara real-time.
+            Kelola bisnis kopi Anda dengan mudah. Monitor penjualan, stok bahan, dan pelaporan.
           </p>
           <div className="mt-10 grid grid-cols-3 gap-6 text-center">
             {[
