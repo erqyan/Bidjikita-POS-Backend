@@ -11,6 +11,7 @@ router.get("/revenue", analyticsController.getRevenueTrend);
 router.get("/top-products", analyticsController.getTopProducts);
 router.get("/payment-methods", analyticsController.getPaymentMethodStats);
 router.get("/low-stock", analyticsController.getLowStockMaterials);
-router.get("/shifts", analyticsController.getShiftPerformance);
+router.get("/profit", analyticsController.getProfitTrend);
+router.get("/financial-report", analyticsController.getFinancialReport);
 
 module.exports = router;

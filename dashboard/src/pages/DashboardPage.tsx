@@ -2,7 +2,7 @@ import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import {
   AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid,
-  Tooltip, ResponsiveContainer, Cell,
+  Tooltip, ResponsiveContainer, Cell, LabelList,
 } from 'recharts';
 import {
   TrendingUp, ShoppingCart, Package, AlertTriangle,
@@ -151,24 +151,17 @@ export default function DashboardPage() {
             {loadingTop ? (
               <PageLoader />
             ) : topProducts && topProducts.length > 0 ? (
-              <ResponsiveContainer width="100%" height={220}>
-                <BarChart data={topProducts} layout="vertical" margin={{ left: 10, right: 20 }}>
-                  <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#f1f5f9" />
-                  <XAxis type="number" tick={{ fontSize: 12, fill: '#94a3b8' }} />
-                  <YAxis
-                    dataKey="product_name"
-                    type="category"
-                    tick={{ fontSize: 11, fill: '#64748b' }}
-                    width={110}
-                  />
-                  <Tooltip
-                    formatter={(value: number) => [`${value} porsi`, 'Terjual']}
-                    contentStyle={{ borderRadius: '12px', border: '1px solid #e2e8f0', fontSize: 13 }}
-                  />
-                  <Bar dataKey="total_quantity" radius={[0, 6, 6, 0]}>
+              <ResponsiveContainer width="100%" height={280}>
+                <BarChart data={topProducts} margin={{ left: 0, right: 20, top: 20, bottom: 60 }}>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                  <XAxis dataKey="product_name" type="category" tick={{ fontSize: 10, fill: '#64748b' }} angle={-20} textAnchor="end" height={60} label={{ value: 'Produk', position: 'bottom', offset: -10, style: { fontSize: 11, fill: '#94a3b8' } }} />
+                  <YAxis type="number" tick={{ fontSize: 11, fill: '#94a3b8' }} label={{ value: 'Terjual (porsi)', angle: -90, position: 'insideLeft', style: { fontSize: 11, fill: '#94a3b8' } }} />
+                  <Tooltip formatter={(value: number) => [`${value} porsi`, 'Terjual']} contentStyle={{ borderRadius: '12px', border: '1px solid #e2e8f0', fontSize: 13 }} />
+                  <Bar dataKey="total_quantity" radius={[6, 6, 0, 0]}>
                     {topProducts.map((_, i) => (
                       <Cell key={i} fill={COLORS[i % COLORS.length]} />
                     ))}
+                    <LabelList dataKey="total_quantity" position="top" style={{ fontSize: 11, fontWeight: 600, fill: '#334155' }} />
                   </Bar>
                 </BarChart>
               </ResponsiveContainer>

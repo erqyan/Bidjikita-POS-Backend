@@ -1,4 +1,4 @@
-import { AlertTriangle } from 'lucide-react';
+import { AlertTriangle, Info } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -14,6 +14,8 @@ interface ConfirmDialogProps {
   onOpenChange: (open: boolean) => void;
   title?: string;
   description?: string;
+  /** Highlighted warning shown between description and footer. Also disables the confirm button. */
+  warning?: string;
   onConfirm: () => void;
   loading?: boolean;
   confirmLabel?: string;
@@ -25,6 +27,7 @@ export function ConfirmDialog({
   onOpenChange,
   title = 'Konfirmasi',
   description = 'Apakah Anda yakin ingin melanjutkan tindakan ini?',
+  warning,
   onConfirm,
   loading,
   confirmLabel = 'Konfirmasi',
@@ -42,21 +45,31 @@ export function ConfirmDialog({
           </div>
           <DialogDescription className="mt-2 ml-11">{description}</DialogDescription>
         </DialogHeader>
+
+        {warning && (
+          <div className="flex gap-2.5 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+            <Info className="mt-0.5 h-4 w-4 shrink-0 text-amber-500" />
+            <span>{warning}</span>
+          </div>
+        )}
+
         <DialogFooter>
           <Button
             variant="outline"
             onClick={() => onOpenChange(false)}
             disabled={loading}
           >
-            Batal
+            {warning ? 'Tutup' : 'Batal'}
           </Button>
-          <Button
-            variant={variant === 'danger' ? 'destructive' : 'default'}
-            onClick={onConfirm}
-            loading={loading}
-          >
-            {confirmLabel}
-          </Button>
+          {!warning && (
+            <Button
+              variant={variant === 'danger' ? 'destructive' : 'default'}
+              onClick={onConfirm}
+              loading={loading}
+            >
+              {confirmLabel}
+            </Button>
+          )}
         </DialogFooter>
       </DialogContent>
     </Dialog>

@@ -4,12 +4,14 @@ const router = express.Router();
 const bundleController = require("../controllers/bundleController");
 const authMiddleware = require("../middleware/authMiddleware");
 const adminMiddleware = require("../middleware/adminMiddleware");
+const { uploadBundleImage } = require("../middleware/uploadMiddleware");
 
 // CREATE BUNDLE (Admin only)
 router.post(
   "/",
   authMiddleware,
   adminMiddleware,
+  uploadBundleImage,
   bundleController.createBundle
 );
 
@@ -38,6 +40,7 @@ router.put(
   "/:id",
   authMiddleware,
   adminMiddleware,
+  uploadBundleImage,
   bundleController.updateBundle
 );
 

@@ -44,6 +44,22 @@ export function getInitials(name: string): string {
     .toUpperCase();
 }
 
+/**
+ * Resolves a stored image path to a full URL.
+ * - Paths starting with "/uploads/" are served by the API server.
+ * - Full http/https URLs are returned unchanged (backward compat).
+ * - Null / undefined returns undefined (no image).
+ */
+const API_SERVER = (
+  (import.meta.env.VITE_API_URL as string | undefined) ?? "http://localhost:5000/api"
+).replace(/\/api$/, "");
+
+export function getMediaUrl(url: string | null | undefined): string | undefined {
+  if (!url) return undefined;
+  if (url.startsWith("http")) return url;
+  return `${API_SERVER}${url}`;
+}
+
 export function formatShortCurrency(amount: number): string {
   if (amount >= 1_000_000) return `${(amount / 1_000_000).toFixed(1)}Jt`;
   if (amount >= 1_000) return `${(amount / 1_000).toFixed(0)}K`;

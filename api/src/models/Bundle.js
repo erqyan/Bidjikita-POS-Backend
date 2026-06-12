@@ -13,6 +13,10 @@ const Bundle = sequelize.define(
       type: DataTypes.TEXT,
       allowNull: true,
     },
+    image_url: {
+      type: DataTypes.TEXT,
+      allowNull: true,
+    },
     bundle_price: {
       type: DataTypes.DECIMAL(10, 2),
       allowNull: false,

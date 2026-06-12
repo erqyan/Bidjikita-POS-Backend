@@ -95,6 +95,7 @@ exports.login = async (req, res) => {
 
     const userWithRole =
       await User.findByPk(user.id, {
+        attributes: { exclude: ["password_hash"] },
         include: Role,
       });
 
@@ -112,6 +113,7 @@ exports.login = async (req, res) => {
 
     res.json({
       token,
+      user: userWithRole,
     });
 
   } catch (error) {

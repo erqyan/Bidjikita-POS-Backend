@@ -5,7 +5,7 @@ const sequelize = require(
 );
 
 const User = require("./User");
-const Shift = require("./Shift");
+
 
 const Order = sequelize.define(
   "Order",
@@ -44,12 +44,5 @@ Order.belongsTo(User, {
   foreignKey: "user_id",
 });
 
-Shift.hasMany(Order, {
-  foreignKey: "shift_id",
-});
-
-Order.belongsTo(Shift, {
-  foreignKey: "shift_id",
-});
 
 module.exports = Order;

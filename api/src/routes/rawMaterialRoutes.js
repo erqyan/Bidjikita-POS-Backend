@@ -52,4 +52,11 @@ router.delete(
   rawMaterialController.deleteRawMaterial
 );
 
+// GET LOGS
+router.get(
+  "/:id/logs",
+  authMiddleware,
+  rawMaterialController.getMaterialLogs
+);
+
 module.exports = router;

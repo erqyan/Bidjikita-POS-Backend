@@ -42,3 +42,20 @@ export const updateIngredient = (
 
 export const deleteIngredient = (id: number) =>
   apiClient.delete(`/raw-materials/${id}`);
+
+export interface IngredientLogEntry {
+  id: number;
+  raw_material_id: number;
+  material_name: string;
+  previous_stock: number;
+  new_stock: number;
+  quantity_change: number;
+  change_type: 'manual_adjustment' | 'order_deduction';
+  user_id: number | null;
+  user_name: string | null;
+  notes: string | null;
+  createdAt: string;
+}
+
+export const getIngredientLogs = (id: number) =>
+  apiClient.get<IngredientLogEntry[]>(`/raw-materials/${id}/logs`);

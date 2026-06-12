@@ -3,11 +3,10 @@ import {
   LayoutDashboard,
   UtensilsCrossed,
   FlaskConical,
-  BookOpen,
   Package,
   ShoppingCart,
   BarChart3,
-  Clock,
+
   Users,
   LogOut,
   Coffee,
@@ -19,11 +18,10 @@ const navItems = [
   { to: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { to: '/menu', label: 'Menu', icon: UtensilsCrossed },
   { to: '/ingredients', label: 'Bahan Baku', icon: FlaskConical },
-  { to: '/recipes', label: 'Resep', icon: BookOpen },
   { to: '/bundles', label: 'Bundling', icon: Package },
   { to: '/orders', label: 'Transaksi', icon: ShoppingCart },
   { to: '/analytics', label: 'Analitik', icon: BarChart3 },
-  { to: '/shifts', label: 'Shift', icon: Clock },
+
   { to: '/users', label: 'Pengguna', icon: Users },
 ];
 

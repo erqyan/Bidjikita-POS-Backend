@@ -1,64 +1,95 @@
-const Recipe = require(
-  "../models/Recipe"
-);
+const ProductVariant = require("../models/ProductVariant");
+const VariantIngredient = require("../models/VariantIngredient");
+const RawMaterial = require("../models/RawMaterial");
+const IngredientLog = require("../models/IngredientLog");
+const Product = require("../models/Product");
 
-const RecipeDetail = require(
-  "../models/RecipeDetail"
-);
+/**
+ * Deducts raw material stock for one order line.
+ *
+ * Each selected variant directly owns its ingredient list (VariantIngredient).
+ * We sum up the quantities across all selected variants, multiply by order quantity,
+ * and deduct from each RawMaterial's stock.
+ *
+ * @param {number}   product_id  - Product being ordered
+ * @param {number[]} variantIds  - All selected variant IDs for this order line
+ * @param {number}   quantity    - Number of servings ordered
+ */
+exports.reduceStock = async (product_id, variantIds, quantity) => {
+  const ids = Array.isArray(variantIds) ? variantIds : [];
 
-const RawMaterial = require(
-  "../models/RawMaterial"
-);
+  // Look up product name for the log
+  const product = await Product.findByPk(product_id, { attributes: ["product_name"] });
+  const productName = product?.product_name || `Product #${product_id}`;
 
-exports.reduceStock = async (
-  product_id,
-  variant_id,
-  quantity
-) => {
-
-  const recipe = await Recipe.findOne({
-    where: {
-      product_id,
-      variant_id,
-    },
-  });
-
-  if (!recipe) {
-    throw new Error(
-      "Recipe not found"
-    );
+  if (ids.length === 0) {
+    // No variant selected — find the default variant for this product
+    const defaultVariant = await ProductVariant.findOne({
+      where: { product_id },
+      order: [["id", "ASC"]],
+    });
+    if (defaultVariant) {
+      ids.push(defaultVariant.id);
+    } else {
+      throw new Error(`No variant found for product ${product_id}`);
+    }
   }
 
-  const recipeDetails =
-    await RecipeDetail.findAll({
-      where: {
-        recipe_id: recipe.id,
-      },
-      include: RawMaterial,
-    });
+  // Load variant names for the log
+  const variantModels = await ProductVariant.findAll({
+    where: { id: ids },
+    attributes: ["variant_name"],
+  });
+  const variantNames = variantModels.map((v) => v.variant_name).filter(Boolean).join(", ");
 
-  for (const detail of recipeDetails) {
+  // Load all ingredients for all selected variants
+  const ingredients = await VariantIngredient.findAll({
+    where: { variant_id: ids },
+    include: [{ model: RawMaterial }],
+  });
 
-    const material =
-      detail.RawMaterial;
+  if (ingredients.length === 0) {
+    throw new Error(`No ingredients found for variant(s) ${ids.join(", ")}`);
+  }
 
-    const usedStock =
-      Number(detail.quantity) *
-      quantity;
+  // Aggregate quantity per raw material
+  const usageMap = {};
+  for (const ing of ingredients) {
+    const key = ing.raw_material_id;
+    usageMap[key] = (usageMap[key] || 0) + Number(ing.quantity);
+  }
 
-    if (
-      Number(material.stock) <
-      usedStock
-    ) {
+  // Deduct stock for each raw material
+  for (const [rawMaterialId, perServingQty] of Object.entries(usageMap)) {
+    const material = await RawMaterial.findByPk(Number(rawMaterialId));
+    if (!material) {
+      throw new Error(`Raw material ${rawMaterialId} not found`);
+    }
+
+    const usedStock = perServingQty * quantity;
+
+    if (Number(material.stock) < usedStock) {
       throw new Error(
-        `${material.material_name} stock is not enough`
+        `Insufficient stock for "${material.material_name}" (need ${usedStock} ${material.unit}, have ${material.stock})`
       );
     }
 
+    const oldStock = Number(material.stock);
+    const newStockVal = oldStock - usedStock;
+
     await material.update({
-      stock:
-        Number(material.stock) -
-        usedStock,
+      stock: newStockVal,
+    });
+
+    // Log the deduction
+    await IngredientLog.create({
+      raw_material_id: material.id,
+      material_name: material.material_name,
+      previous_stock: oldStock,
+      new_stock: newStockVal,
+      quantity_change: -usedStock,
+      change_type: "order_deduction",
+      notes: `Pesanan: ${productName}${variantNames ? " (" + variantNames + ")" : ""} × ${quantity}`,
     });
   }
 };

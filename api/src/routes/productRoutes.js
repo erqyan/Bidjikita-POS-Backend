@@ -4,32 +4,29 @@ const router = express.Router();
 const productController = require("../controllers/productController");
 const authMiddleware = require("../middleware/authMiddleware");
 const adminMiddleware = require("../middleware/adminMiddleware");
+const uploadProductImage = require("../middleware/uploadMiddleware");
 
-// CREATE PRODUCT
+// CREATE PRODUCT (accepts nested variants)
 router.post(
   "/",
   authMiddleware,
   adminMiddleware,
+  uploadProductImage,
   productController.createProduct
 );
 
 // GET ALL PRODUCTS
-router.get(
-  "/",
-  productController.getProducts
-);
+router.get("/", productController.getProducts);
 
 // GET PRODUCT BY ID
-router.get(
-  "/:id",
-  productController.getProductById
-);
+router.get("/:id", productController.getProductById);
 
-// UPDATE PRODUCT
+// UPDATE PRODUCT (accepts nested variants)
 router.put(
   "/:id",
   authMiddleware,
   adminMiddleware,
+  uploadProductImage,
   productController.updateProduct
 );
 
@@ -39,14 +36,6 @@ router.delete(
   authMiddleware,
   adminMiddleware,
   productController.deleteProduct
-);
-
-// UPDATE PRODUCT PRICING
-router.put(
-  "/:id/pricing",
-  authMiddleware,
-  adminMiddleware,
-  productController.updateProductPricing
 );
 
 module.exports = router;

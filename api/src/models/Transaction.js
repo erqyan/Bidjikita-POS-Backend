@@ -7,7 +7,7 @@ const sequelize = require(
 );
 
 const User = require("./User");
-const Shift = require("./Shift");
+
 const Order = require("./Order");
 
 const Transaction = sequelize.define(
@@ -50,7 +50,7 @@ const Transaction = sequelize.define(
         "failed"
       ),
       defaultValue:
-        "pending",
+        "paid",
     },
 
     notes: {
@@ -68,14 +68,6 @@ Transaction.belongsTo(User, {
   foreignKey: "user_id",
 });
 
-// SHIFT
-Shift.hasMany(Transaction, {
-  foreignKey: "shift_id",
-});
-
-Transaction.belongsTo(Shift, {
-  foreignKey: "shift_id",
-});
 
 // ORDER
 Order.hasOne(Transaction, {

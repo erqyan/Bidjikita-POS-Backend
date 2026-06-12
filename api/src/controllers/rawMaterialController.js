@@ -1,6 +1,9 @@
 const RawMaterial = require("../models/RawMaterial");
-const RecipeDetail = require("../models/RecipeDetail");
-const Recipe = require("../models/Recipe");
+const IngredientLog = require("../models/IngredientLog");
+const VariantIngredient = require("../models/VariantIngredient");
+const ProductVariant = require("../models/ProductVariant");
+const Product = require("../models/Product");
+const User = require("../models/User");
 
 // CREATE RAW MATERIAL
 exports.createRawMaterial = async (req, res) => {
@@ -78,6 +81,9 @@ exports.updateRawMaterial = async (req, res) => {
           .json({ message: "Material name already exists" });
     }
 
+    // Capture old stock before update for logging
+    const oldStock = Number(material.stock);
+
     await material.update({
       material_name: material_name ?? material.material_name,
       unit: unit ?? material.unit,
@@ -85,6 +91,31 @@ exports.updateRawMaterial = async (req, res) => {
       minimum_stock: minimum_stock ?? material.minimum_stock,
       cost_per_unit: cost_per_unit ?? material.cost_per_unit,
     });
+
+    // Log stock change
+    if (stock !== undefined && Number(stock) !== oldStock) {
+      const newStock = Number(stock);
+      const qtyChange = newStock - oldStock;
+
+      // Look up user name from DB since JWT only has id + role
+      let userName = null;
+      if (req.user?.id) {
+        const u = await User.findByPk(req.user.id, { attributes: ["full_name", "username"] });
+        userName = u?.full_name || u?.username || null;
+      }
+
+      await IngredientLog.create({
+        raw_material_id: material.id,
+        material_name: material.material_name,
+        previous_stock: oldStock,
+        new_stock: newStock,
+        quantity_change: qtyChange,
+        change_type: "manual_adjustment",
+        user_id: req.user?.id || null,
+        user_name: userName,
+        notes: req.body.notes || null,
+      });
+    }
 
     res.json({ message: "Material updated successfully", data: material });
   } catch (error) {
@@ -99,20 +130,42 @@ exports.deleteRawMaterial = async (req, res) => {
     if (!material)
       return res.status(404).json({ message: "Material not found" });
 
-    const recipeUsage = await RecipeDetail.findOne({
+    const usage = await VariantIngredient.findOne({
       where: { raw_material_id: material.id },
-      include: [{ model: Recipe, attributes: ["id", "recipe_name"] }],
+      include: [
+        {
+          model: ProductVariant,
+          attributes: ["id", "variant_name"],
+          include: [{ model: Product, attributes: ["id", "product_name"] }],
+        },
+      ],
     });
 
-    if (recipeUsage) {
+    if (usage) {
       return res.status(400).json({
-        message: "Cannot delete material because it is used in a recipe",
-        recipe: recipeUsage.Recipe?.recipe_name || null,
+        message: "Tidak dapat menghapus bahan karena digunakan dalam varian menu",
+        variant: usage.ProductVariant?.variant_name || null,
+        product: usage.ProductVariant?.Product?.product_name || null,
       });
     }
 
     await material.destroy();
     res.json({ message: "Material deleted successfully" });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// GET MATERIAL LOGS
+exports.getMaterialLogs = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const logs = await IngredientLog.findAll({
+      where: { raw_material_id: id },
+      order: [["createdAt", "DESC"]],
+      limit: 100,
+    });
+    res.json(logs);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }

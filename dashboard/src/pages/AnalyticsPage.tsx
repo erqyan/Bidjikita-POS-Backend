@@ -2,12 +2,12 @@ import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import {
   AreaChart, Area, BarChart, Bar, PieChart, Pie, Cell,
-  XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend,
+  XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, LabelList,
 } from 'recharts';
-import { TrendingUp, ShoppingCart, Package, AlertTriangle, DollarSign, Calendar } from 'lucide-react';
+import { TrendingUp, TrendingDown, ShoppingCart, Package, AlertTriangle, DollarSign, Calendar } from 'lucide-react';
 import {
   getAnalyticsSummary, getRevenueTrend, getTopProducts,
-  getPaymentMethodStats, getShiftPerformance,
+  getPaymentMethodStats, getProfitTrend,
 } from '@/api/analytics';
 import { StatCard } from '@/components/ui/StatCard';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card';
@@ -48,9 +48,9 @@ export default function AnalyticsPage() {
     queryFn: () => getPaymentMethodStats(period).then((r) => r.data),
   });
 
-  const { data: shiftPerf, isPending: loadShift } = useQuery({
-    queryKey: ['shift-performance', period],
-    queryFn: () => getShiftPerformance(period).then((r) => r.data),
+  const { data: profitData, isPending: loadProfit } = useQuery({
+    queryKey: ['profit-trend', period],
+    queryFn: () => getProfitTrend(period).then((r) => r.data),
   });
 
   const periodDays = period === '7d' ? 7 : period === '30d' ? 30 : 90;
@@ -114,6 +114,67 @@ export default function AnalyticsPage() {
         </CardContent>
       </Card>
 
+      {/* Net Profit Trend */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Keuntungan Bersih — {period === '7d' ? '7 Hari' : period === '30d' ? '30 Hari' : '90 Hari'} Terakhir</CardTitle>
+        </CardHeader>
+        <CardContent>
+          {loadProfit ? <PageLoader /> : !profitData || profitData.length === 0 ? (
+            <div className="flex items-center justify-center h-48 text-gray-400 text-sm">Belum ada data</div>
+          ) : (
+            <>
+              <div className="grid grid-cols-3 gap-3 mb-4">
+                <div className="rounded-lg bg-green-50 p-3 text-center">
+                  <p className="text-[11px] text-green-600 font-medium">Pendapatan</p>
+                  <p className="text-sm font-bold text-green-700">{formatCurrency(profitData.reduce((s, d) => s + d.revenue, 0))}</p>
+                </div>
+                <div className="rounded-lg bg-red-50 p-3 text-center">
+                  <p className="text-[11px] text-red-600 font-medium">Biaya</p>
+                  <p className="text-sm font-bold text-red-700">{formatCurrency(profitData.reduce((s, d) => s + d.cost, 0))}</p>
+                </div>
+                <div className="rounded-lg bg-amber-50 p-3 text-center">
+                  <p className="text-[11px] text-amber-600 font-medium">Keuntungan Bersih</p>
+                  <p className="text-sm font-bold text-amber-700">{formatCurrency(profitData.reduce((s, d) => s + d.profit, 0))}</p>
+                </div>
+              </div>
+              <ResponsiveContainer width="100%" height={280}>
+                <AreaChart data={profitData} margin={{ top: 5, right: 10, left: 10, bottom: 5 }}>
+                  <defs>
+                    <linearGradient id="profitGrad" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#16a34a" stopOpacity={0.2} />
+                      <stop offset="95%" stopColor="#16a34a" stopOpacity={0} />
+                    </linearGradient>
+                    <linearGradient id="costGrad" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#dc2626" stopOpacity={0.1} />
+                      <stop offset="95%" stopColor="#dc2626" stopOpacity={0} />
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
+                  <XAxis dataKey="date" tick={{ fontSize: 10, fill: '#94a3b8' }} tickFormatter={(v) => new Date(v).toLocaleDateString('id-ID', { month: 'short', day: 'numeric' })} />
+                  <YAxis tick={{ fontSize: 11, fill: '#94a3b8' }} tickFormatter={(v) => `${(v / 1000).toFixed(0)}K`} />
+                  <Tooltip
+                    formatter={(value: number, name: string) => {
+                      const labels: Record<string, string> = { revenue: 'Pendapatan', cost: 'Biaya', profit: 'Keuntungan' };
+                      return [formatCurrency(value), labels[name] || name];
+                    }}
+                    labelFormatter={(l) => new Date(l).toLocaleDateString('id-ID', { weekday: 'long', month: 'long', day: 'numeric' })}
+                    contentStyle={{ borderRadius: '12px', border: '1px solid #e2e8f0', fontSize: 12 }}
+                  />
+                  <Legend formatter={(value: string) => {
+                    const labels: Record<string, string> = { revenue: 'Pendapatan', cost: 'Biaya', profit: 'Keuntungan' };
+                    return <span className="text-xs">{labels[value] || value}</span>;
+                  }} />
+                  <Area type="monotone" dataKey="revenue" stroke="#16a34a" strokeWidth={2} fill="url(#profitGrad)" />
+                  <Area type="monotone" dataKey="cost" stroke="#dc2626" strokeWidth={2} fill="url(#costGrad)" />
+                  <Area type="monotone" dataKey="profit" stroke="#d97706" strokeWidth={2.5} fill="none" strokeDasharray="4 3" />
+                </AreaChart>
+              </ResponsiveContainer>
+            </>
+          )}
+        </CardContent>
+      </Card>
+
       {/* Payment + Top Products */}
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
         <Card>
@@ -158,13 +219,15 @@ export default function AnalyticsPage() {
             {loadTop ? <PageLoader /> : !topProducts || topProducts.length === 0 ? (
               <div className="flex items-center justify-center h-48 text-gray-400 text-sm">Belum ada data</div>
             ) : (
-              <ResponsiveContainer width="100%" height={220}>
-                <BarChart data={topProducts.slice(0, 8)} layout="vertical" margin={{ left: 10, right: 20 }}>
-                  <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#f1f5f9" />
-                  <XAxis type="number" tick={{ fontSize: 11, fill: '#94a3b8' }} />
-                  <YAxis dataKey="product_name" type="category" tick={{ fontSize: 10, fill: '#64748b' }} width={100} />
+              <ResponsiveContainer width="100%" height={300}>
+                <BarChart data={topProducts.slice(0, 8)} margin={{ left: 0, right: 20, top: 20, bottom: 60 }}>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                  <XAxis dataKey="product_name" type="category" tick={{ fontSize: 10, fill: '#64748b' }} angle={-20} textAnchor="end" height={60} label={{ value: 'Produk', position: 'bottom', offset: -10, style: { fontSize: 11, fill: '#94a3b8' } }} />
+                  <YAxis type="number" tick={{ fontSize: 11, fill: '#94a3b8' }} label={{ value: 'Terjual (porsi)', angle: -90, position: 'insideLeft', style: { fontSize: 11, fill: '#94a3b8' } }} />
                   <Tooltip formatter={(v: number) => [`${v} porsi`, 'Terjual']} contentStyle={{ borderRadius: '12px', fontSize: 12 }} />
-                  <Bar dataKey="total_quantity" fill="#d97706" radius={[0, 6, 6, 0]} />
+                  <Bar dataKey="total_quantity" fill="#d97706" radius={[6, 6, 0, 0]}>
+                    <LabelList dataKey="total_quantity" position="top" style={{ fontSize: 11, fontWeight: 600, fill: '#334155' }} />
+                  </Bar>
                 </BarChart>
               </ResponsiveContainer>
             )}
@@ -172,42 +235,6 @@ export default function AnalyticsPage() {
         </Card>
       </div>
 
-      {/* Shift Performance */}
-      {shiftPerf && shiftPerf.length > 0 && (
-        <Card>
-          <CardHeader><CardTitle>Performa Shift</CardTitle></CardHeader>
-          <CardContent>
-            {loadShift ? <PageLoader /> : (
-              <div className="overflow-x-auto">
-                <table className="min-w-full text-sm">
-                  <thead><tr className="border-b"><th className="text-left py-2 pr-4 text-gray-500 font-medium">Nama Shift</th><th className="text-right py-2 pr-4 text-gray-500 font-medium">Total Order</th><th className="text-right py-2 text-gray-500 font-medium">Total Pendapatan</th><th className="py-2 pl-4 text-gray-500 font-medium w-48">Proporsi</th></tr></thead>
-                  <tbody>
-                    {shiftPerf.map((s) => {
-                      const totalRev = shiftPerf.reduce((a, b) => a + Number(b.total_revenue), 0);
-                      const pct = totalRev > 0 ? (Number(s.total_revenue) / totalRev) * 100 : 0;
-                      return (
-                        <tr key={s.shift_name} className="border-b last:border-0">
-                          <td className="py-3 pr-4 font-medium">{s.shift_name}</td>
-                          <td className="py-3 pr-4 text-right text-gray-600">{formatNumber(Number(s.total_orders))}</td>
-                          <td className="py-3 text-right font-semibold text-amber-700">{formatCurrency(s.total_revenue)}</td>
-                          <td className="py-3 pl-4">
-                            <div className="flex items-center gap-2">
-                              <div className="flex-1 h-2 bg-gray-100 rounded-full overflow-hidden">
-                                <div className="h-full bg-amber-500 rounded-full transition-all" style={{ width: `${pct}%` }} />
-                              </div>
-                              <span className="text-xs text-gray-500 w-10 text-right">{pct.toFixed(0)}%</span>
-                            </div>
-                          </td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-      )}
     </div>
   );
 }

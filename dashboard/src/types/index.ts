@@ -22,26 +22,28 @@ export interface Category {
   updatedAt: string;
 }
 
+export interface VariantIngredient {
+  id: number;
+  variant_id: number;
+  raw_material_id: number;
+  quantity: number;
+  RawMaterial?: Pick<RawMaterial, "id" | "material_name" | "unit" | "cost_per_unit">;
+}
+
 export interface ProductVariant {
   id: number;
   variant_name: string;
-  additional_price: number;
+  price: number;
+  overhead_cost: number;
   product_id: number;
+  Product?: Pick<Product, "id" | "product_name">;
+  VariantIngredients?: VariantIngredient[];
 }
 
 export interface Product {
   id: number;
   product_name: string;
   description?: string;
-  base_price: number;
-  /** Auto-calculated from recipe ingredient costs */
-  base_cost: number;
-  /** Fixed cost per serving: electricity, labor, packaging, etc. */
-  overhead_cost: number;
-  /** Total cost = base_cost + overhead_cost */
-  selling_price: number;
-  /** Derived: (selling_price - total_cost) / selling_price × 100 */
-  profit_margin: number;
   status: "available" | "out_of_stock";
   is_active: boolean;
   image_url?: string;
@@ -85,17 +87,17 @@ export interface BundleItem {
   id: number;
   bundle_id: number;
   product_id: number;
+  variant_id?: number;
   quantity: number;
-  Product?: Pick<
-    Product,
-    "id" | "product_name" | "base_cost" | "selling_price"
-  >;
+  Product?: Pick<Product, 'id' | 'product_name' | 'image_url'>;
+  ProductVariant?: Pick<ProductVariant, 'id' | 'variant_name' | 'price' | 'overhead_cost' | 'VariantIngredients'>;
 }
 
 export interface Bundle {
   id: number;
   bundle_name: string;
   description?: string;
+  image_url?: string;
   bundle_price: number;
   total_bundle_cost: number;
   bundle_profit: number;
@@ -104,27 +106,26 @@ export interface Bundle {
   createdAt?: string;
 }
 
+export interface OrderDetailVariant {
+  id: number;
+  variant_id: number;
+  ProductVariant?: Pick<ProductVariant, 'id' | 'variant_name' | 'price'>;
+}
+
 export interface OrderDetail {
   id: number;
   quantity: number;
   price: number;
   subtotal: number;
-  Product?: Pick<Product, "id" | "product_name" | "base_price">;
-  ProductVariant?: Pick<
-    ProductVariant,
-    "id" | "variant_name" | "additional_price"
-  >;
+  Product?: Pick<Product, 'id' | 'product_name'>;
+  OrderDetailVariants?: OrderDetailVariant[];
+  bundle_id?: number | null;
+  bundle_name?: string | null;
+  bundle_items_json?: string | null;
+  Bundle?: Pick<Bundle, 'id' | 'bundle_name' | 'bundle_price'>;
 }
 
-export interface Shift {
-  id: number;
-  shift_name: string;
-  shift_date: string;
-  start_time: string;
-  end_time: string;
-  status: "open" | "closed";
-  createdAt?: string;
-}
+
 
 export interface Order {
   id: number;
@@ -133,10 +134,8 @@ export interface Order {
   order_status: "pending" | "completed" | "cancelled";
   notes?: string;
   user_id: number;
-  shift_id: number;
   createdAt: string;
   User?: Pick<User, "id" | "full_name" | "username">;
-  Shift?: Pick<Shift, "id" | "shift_name">;
   OrderDetails?: OrderDetail[];
 }
 
@@ -150,9 +149,7 @@ export interface Transaction {
   notes?: string;
   order_id: number;
   user_id: number;
-  shift_id: number;
   User?: Pick<User, "id" | "full_name" | "username">;
-  Shift?: Pick<Shift, "id" | "shift_name" | "shift_date" | "status">;
   Order?: Order;
   createdAt?: string;
 }
@@ -182,10 +179,4 @@ export interface PaymentMethodStat {
   payment_method: string;
   count: number;
   total: number;
-}
-
-export interface ShiftPerformance {
-  shift_name: string;
-  total_revenue: number;
-  total_orders: number;
 }

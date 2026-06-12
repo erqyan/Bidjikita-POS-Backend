@@ -3,12 +3,14 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { Plus, Pencil, Trash2, AlertTriangle, Search } from "lucide-react";
+import { Plus, Pencil, Trash2, AlertTriangle, Search, ChevronUp, ChevronDown, ChevronsUpDown, History } from "lucide-react";
 import {
   getIngredients,
   createIngredient,
   updateIngredient,
   deleteIngredient,
+  getIngredientLogs,
+  type IngredientLogEntry,
 } from "@/api/ingredients";
 import type { RawMaterial } from "@/types";
 import { Button } from "@/components/ui/Button";
@@ -63,19 +65,77 @@ export default function IngredientsPage() {
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<RawMaterial | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<RawMaterial | null>(null);
+  const [logTarget, setLogTarget] = useState<RawMaterial | null>(null);
+
+  const { data: logs = [], isFetching: loadingLogs } = useQuery({
+    queryKey: ["ingredient-logs", logTarget?.id],
+    queryFn: () => getIngredientLogs(logTarget!.id).then((r) => r.data),
+    enabled: !!logTarget,
+    refetchOnMount: "always",
+  });
+  const [sortKey, setSortKey] = useState<string>('');
+  const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc');
+
+  const handleSort = (key: string) => {
+    if (sortKey === key) {
+      setSortDir((d) => (d === 'asc' ? 'desc' : 'asc'));
+    } else {
+      setSortKey(key);
+      setSortDir('asc');
+    }
+  };
 
   const { data: ingredients = [], isPending } = useQuery({
     queryKey: ["ingredients"],
     queryFn: () => getIngredients().then((r) => r.data),
   });
 
-  const filtered = useMemo(
-    () =>
-      ingredients.filter((m) =>
-        m.material_name.toLowerCase().includes(dSearch.toLowerCase()),
-      ),
-    [ingredients, dSearch],
-  );
+  const filtered = useMemo(() => {
+    let result = ingredients.filter((m) =>
+      m.material_name.toLowerCase().includes(dSearch.toLowerCase()),
+    );
+
+    // Sort
+    if (sortKey) {
+      result = [...result].sort((a, b) => {
+        let aVal: string | number = '';
+        let bVal: string | number = '';
+
+        switch (sortKey) {
+          case 'name':
+            aVal = a.material_name.toLowerCase();
+            bVal = b.material_name.toLowerCase();
+            break;
+          case 'unit':
+            aVal = a.unit.toLowerCase();
+            bVal = b.unit.toLowerCase();
+            break;
+          case 'cost':
+            aVal = Number(a.cost_per_unit);
+            bVal = Number(b.cost_per_unit);
+            break;
+          case 'stock':
+            aVal = Number(a.stock);
+            bVal = Number(b.stock);
+            break;
+          case 'min_stock':
+            aVal = Number(a.minimum_stock);
+            bVal = Number(b.minimum_stock);
+            break;
+          case 'updated':
+            aVal = new Date(a.updatedAt || 0).getTime();
+            bVal = new Date(b.updatedAt || 0).getTime();
+            break;
+        }
+
+        if (aVal < bVal) return sortDir === 'asc' ? -1 : 1;
+        if (aVal > bVal) return sortDir === 'asc' ? 1 : -1;
+        return 0;
+      });
+    }
+
+    return result;
+  }, [ingredients, dSearch, sortKey, sortDir]);
 
   const lowCount = ingredients.filter(
     (m) => Number(m.stock) <= Number(m.minimum_stock),
@@ -113,7 +173,9 @@ export default function IngredientsPage() {
     mutationFn: async (data: FormData) =>
       editing ? updateIngredient(editing.id, data) : createIngredient(data),
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ["ingredients"] });
+      qc.invalidateQueries({ queryKey: ["ingredients"], refetchType: "all" });
+      qc.invalidateQueries({ queryKey: ["analytics-summary"], refetchType: "all" });
+      qc.invalidateQueries({ queryKey: ["ingredient-logs"], refetchType: "all" });
       toast({
         title: "Berhasil",
         description: editing ? "Bahan diperbarui" : "Bahan ditambahkan",
@@ -132,7 +194,9 @@ export default function IngredientsPage() {
   const deleteMutation = useMutation({
     mutationFn: (id: number) => deleteIngredient(id),
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ["ingredients"] });
+      qc.invalidateQueries({ queryKey: ["ingredients"], refetchType: "all" });
+      qc.invalidateQueries({ queryKey: ["analytics-summary"], refetchType: "all" });
+      qc.invalidateQueries({ queryKey: ["ingredient-logs"], refetchType: "all" });
       toast({
         title: "Berhasil",
         description: "Bahan dihapus",
@@ -191,13 +255,67 @@ export default function IngredientsPage() {
         <TableWrapper>
           <TableHeader>
             <tr>
-              <TableHead>Nama Bahan</TableHead>
-              <TableHead>Satuan</TableHead>
-              <TableHead>Harga / Satuan</TableHead>
-              <TableHead>Stok Saat Ini</TableHead>
-              <TableHead>Stok Minimum</TableHead>
+              <TableHead className="cursor-pointer select-none">
+                <button type="button" onClick={() => handleSort('name')} className="flex items-center gap-1 w-full">
+                  Nama Bahan
+                  {sortKey === 'name' ? (
+                    sortDir === 'asc' ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />
+                  ) : (
+                    <ChevronsUpDown className="h-3 w-3 text-gray-300" />
+                  )}
+                </button>
+              </TableHead>
+              <TableHead className="cursor-pointer select-none">
+                <button type="button" onClick={() => handleSort('unit')} className="flex items-center gap-1 w-full">
+                  Satuan
+                  {sortKey === 'unit' ? (
+                    sortDir === 'asc' ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />
+                  ) : (
+                    <ChevronsUpDown className="h-3 w-3 text-gray-300" />
+                  )}
+                </button>
+              </TableHead>
+              <TableHead className="cursor-pointer select-none">
+                <button type="button" onClick={() => handleSort('cost')} className="flex items-center gap-1 w-full">
+                  Harga / Satuan
+                  {sortKey === 'cost' ? (
+                    sortDir === 'asc' ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />
+                  ) : (
+                    <ChevronsUpDown className="h-3 w-3 text-gray-300" />
+                  )}
+                </button>
+              </TableHead>
+              <TableHead className="cursor-pointer select-none">
+                <button type="button" onClick={() => handleSort('stock')} className="flex items-center gap-1 w-full">
+                  Stok Saat Ini
+                  {sortKey === 'stock' ? (
+                    sortDir === 'asc' ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />
+                  ) : (
+                    <ChevronsUpDown className="h-3 w-3 text-gray-300" />
+                  )}
+                </button>
+              </TableHead>
+              <TableHead className="cursor-pointer select-none">
+                <button type="button" onClick={() => handleSort('min_stock')} className="flex items-center gap-1 w-full">
+                  Stok Minimum
+                  {sortKey === 'min_stock' ? (
+                    sortDir === 'asc' ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />
+                  ) : (
+                    <ChevronsUpDown className="h-3 w-3 text-gray-300" />
+                  )}
+                </button>
+              </TableHead>
               <TableHead>Status</TableHead>
-              <TableHead>Diperbarui</TableHead>
+              <TableHead className="cursor-pointer select-none">
+                <button type="button" onClick={() => handleSort('updated')} className="flex items-center gap-1 w-full">
+                  Diperbarui
+                  {sortKey === 'updated' ? (
+                    sortDir === 'asc' ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />
+                  ) : (
+                    <ChevronsUpDown className="h-3 w-3 text-gray-300" />
+                  )}
+                </button>
+              </TableHead>
               <TableHead className="text-right">Aksi</TableHead>
             </tr>
           </TableHeader>
@@ -236,6 +354,14 @@ export default function IngredientsPage() {
                   </TableCell>
                   <TableCell>
                     <div className="flex justify-end gap-1">
+                      <Button
+                        variant="ghost"
+                        size="icon-sm"
+                        onClick={() => setLogTarget(m)}
+                        title="Riwayat stok"
+                      >
+                        <History className="h-3.5 w-3.5" />
+                      </Button>
                       <Button
                         variant="ghost"
                         size="icon-sm"
@@ -325,6 +451,60 @@ export default function IngredientsPage() {
               </Button>
             </DialogFooter>
           </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Stock History Dialog */}
+      <Dialog open={!!logTarget} onOpenChange={(v) => !v && setLogTarget(null)}>
+        <DialogContent className="max-w-lg max-h-[70vh]">
+          <DialogHeader>
+            <DialogTitle>Riwayat Stok: {logTarget?.material_name}</DialogTitle>
+          </DialogHeader>
+          <div className="overflow-y-auto max-h-[50vh]">
+            {loadingLogs ? (
+              <PageLoader />
+            ) : logs.length === 0 ? (
+              <p className="text-sm text-gray-400 text-center py-8">Belum ada riwayat perubahan stok</p>
+            ) : (
+              <div className="space-y-2">
+                {logs.map((log) => (
+                  <div key={log.id} className="flex items-start gap-3 rounded-lg border border-gray-100 p-3 text-sm">
+                    <div
+                      className={`mt-0.5 h-2.5 w-2.5 rounded-full shrink-0 ${
+                        log.quantity_change > 0 ? 'bg-green-400' : log.quantity_change < 0 ? 'bg-red-400' : 'bg-gray-300'
+                      }`}
+                    />
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center justify-between gap-2">
+                        <span className={`font-semibold ${log.quantity_change > 0 ? 'text-green-700' : 'text-red-700'}`}>
+                          {log.quantity_change > 0 ? '+' : ''}{Number(log.quantity_change)} {logTarget?.unit}
+                        </span>
+                        <span className="text-[11px] text-gray-400">
+                          {formatDateTime(log.createdAt)}
+                        </span>
+                      </div>
+                      <div className="text-xs text-gray-500 mt-0.5">
+                        {Number(log.previous_stock)} → {Number(log.new_stock)} {logTarget?.unit}
+                      </div>
+                      <div className="flex items-center gap-2 mt-1 text-[11px]">
+                        {log.change_type === 'order_deduction' ? (
+                          <span className="inline-block bg-red-50 text-red-600 px-1.5 py-0.5 rounded text-[10px] font-medium">PESANAN</span>
+                        ) : (
+                          <span className="inline-block bg-blue-50 text-blue-600 px-1.5 py-0.5 rounded text-[10px] font-medium">ADJUSTMENT</span>
+                        )}
+                        {log.user_name && (
+                          <span className="text-gray-400">oleh {log.user_name}</span>
+                        )}
+                      </div>
+                      {log.notes && (
+                        <p className="text-[11px] text-gray-400 mt-1 italic">{log.notes}</p>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
         </DialogContent>
       </Dialog>
 

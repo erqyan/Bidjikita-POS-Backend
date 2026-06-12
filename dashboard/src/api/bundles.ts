@@ -21,11 +21,15 @@ export const getAllBundles = () =>
 export const getBundleById = (id: number) =>
   apiClient.get<Bundle>(`/bundles/${id}`);
 
-export const createBundle = (data: CreateBundlePayload) =>
-  apiClient.post<Bundle>('/bundles', data);
+export const createBundle = (data: FormData) =>
+  apiClient.post<Bundle>('/bundles', data, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  });
 
-export const updateBundle = (id: number, data: Partial<CreateBundlePayload>) =>
-  apiClient.put<Bundle>(`/bundles/${id}`, data);
+export const updateBundle = (id: number, data: FormData) =>
+  apiClient.put<Bundle>(`/bundles/${id}`, data, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  });
 
 export const deleteBundle = (id: number) =>
   apiClient.delete(`/bundles/${id}`);

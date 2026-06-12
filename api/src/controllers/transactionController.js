@@ -1,95 +1,46 @@
-const Transaction = require(
-  "../models/Transaction"
-);
-
-const Order = require(
-  "../models/Order"
-);
-
-const OrderDetail = require(
-  "../models/OrderDetail"
-);
-
-const Product = require(
-  "../models/Product"
-);
-
-const ProductVariant = require(
-  "../models/ProductVariant"
-);
-
-const User = require(
-  "../models/User"
-);
-
-const Shift = require(
-  "../models/Shift"
-);
+const Transaction = require("../models/Transaction");
+const Order = require("../models/Order");
+const OrderDetail = require("../models/OrderDetail");
+const OrderDetailVariant = require("../models/OrderDetailVariant");
+const Product = require("../models/Product");
+const ProductVariant = require("../models/ProductVariant");
+const Bundle = require("../models/Bundle");
+const User = require("../models/User");
 
 // reusable include
 const transactionInclude = [
   {
     model: User,
-    attributes: [
-      "id",
-      "full_name",
-      "username",
-    ],
-  },
-
-  {
-    model: Shift,
-    attributes: [
-      "id",
-      "shift_name",
-      "shift_date",
-      "status",
-    ],
+    attributes: ["id", "full_name", "username"],
   },
 
   {
     model: Order,
-
-    attributes: [
-      "id",
-      "order_number",
-      "total_amount",
-      "order_status",
-      "notes",
-      "createdAt",
-    ],
+    attributes: ["id", "order_number", "total_amount", "order_status", "notes", "createdAt"],
 
     include: [
       {
         model: OrderDetail,
-
-        attributes: [
-          "id",
-          "quantity",
-          "price",
-          "subtotal",
-        ],
+        attributes: ["id", "quantity", "price", "subtotal", "bundle_id", "bundle_name", "bundle_items_json"],
 
         include: [
           {
             model: Product,
-
-            attributes: [
-              "id",
-              "product_name",
-              "base_price",
+            attributes: ["id", "product_name"],
+          },
+          {
+            model: OrderDetailVariant,
+            attributes: ["id"],
+            include: [
+              {
+                model: ProductVariant,
+                attributes: ["id", "variant_name", "price"],
+              },
             ],
           },
-
           {
-            model:
-              ProductVariant,
-
-            attributes: [
-              "id",
-              "variant_name",
-              "additional_price",
-            ],
+            model: Bundle,
+            attributes: ["id", "bundle_name", "bundle_price"],
           },
         ],
       },
@@ -165,9 +116,6 @@ exports.createTransaction =
 
           user_id:
             req.user.id,
-
-          shift_id:
-            order.shift_id,
 
           order_id,
         });
