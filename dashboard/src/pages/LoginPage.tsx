@@ -44,8 +44,12 @@ export default function LoginPage() {
       <div className="hidden lg:flex lg:w-1/2 bg-slate-900 flex-col items-center justify-center p-12 relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-br from-amber-600/20 to-transparent" />
         <div className="relative z-10 text-center">
-          <div className="flex h-20 w-20 items-center justify-center rounded-3xl bg-amber-500 mx-auto mb-6 shadow-2xl">
-            <Coffee className="h-10 w-10 text-white" />
+          <div className="bg-white rounded-2xl p-4 inline-flex items-center justify-center mx-auto mb-6 shadow-lg">
+            <img
+              src="/logo.png"
+              alt="Bidjikita"
+              className="h-20"
+            />
           </div>
           <h1 className="text-4xl font-bold text-white mb-3">Bidjikita</h1>
           <p className="text-amber-400 text-lg font-medium mb-4">Admin Dashboard</p>
@@ -72,8 +76,12 @@ export default function LoginPage() {
         <div className="w-full max-w-md">
           <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-8">
             <div className="flex lg:hidden items-center gap-3 mb-8">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-amber-500">
-                <Coffee className="h-5 w-5 text-white" />
+              <div className="bg-white rounded-lg p-1.5 flex items-center justify-center">
+                <img
+                  src="/logo.png"
+                  alt="Bidjikita"
+                  className="h-7"
+                />
               </div>
               <div>
                 <p className="font-bold text-gray-900">Bidjikita</p>

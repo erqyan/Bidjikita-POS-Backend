@@ -39,12 +39,16 @@ export function Sidebar() {
       {/* Logo */}
       <div className="px-6 py-5 border-b border-slate-700/50">
         <div className="flex items-center gap-3">
-          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-amber-500">
-            <Coffee className="h-5 w-5 text-white" />
+          <div className="bg-white rounded-xl p-1.5 flex items-center justify-center shadow-sm shrink-0">
+            <img
+              src="/logo.png"
+              alt="Bidjikita"
+              className="h-8"
+            />
           </div>
           <div>
-            <p className="text-amber-400 font-bold text-base leading-none">Bidjikita</p>
-            <p className="text-slate-400 text-xs mt-0.5">Admin Dashboard</p>
+            <p className="text-white font-bold text-sm leading-tight">Admin</p>
+            <p className="text-slate-400 text-xs leading-tight">Dashboard</p>
           </div>
         </div>
       </div>
