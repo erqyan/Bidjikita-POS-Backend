@@ -514,7 +514,7 @@ export default function BundlesPage() {
             </div>
 
             {/* Bundle Price — below products */}
-            <Input label="Harga Bundle (Rp)" type="number" step="500" {...register('bundle_price')} error={errors.bundle_price?.message} placeholder="50000" />
+            <Input label="Harga Bundle (Rp)" type="number" step="any" {...register('bundle_price')} error={errors.bundle_price?.message} placeholder="50000" />
 
             {/* Live calculations */}
             <LiveCalculation control={control} products={products} />
