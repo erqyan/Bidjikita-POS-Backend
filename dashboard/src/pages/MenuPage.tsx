@@ -222,10 +222,17 @@ function VariantCard({
                   control={control}
                   render={({ field: f }) => (
                     <Select
-                      options={rawMaterials.map((m) => ({
-                        value: String(m.id),
-                        label: `${m.material_name} (${m.unit})`,
-                      }))}
+                      options={rawMaterials
+                        .filter((m) => {
+                          const alreadyPicked = watchedIngredients
+                            .filter((_: any, i: number) => i !== ingIdx)
+                            .map((wi: any) => Number(wi.ingredient_id));
+                          return !alreadyPicked.includes(m.id);
+                        })
+                        .map((m) => ({
+                          value: String(m.id),
+                          label: `${m.material_name} (${m.unit})`,
+                        }))}
                       value={f.value ? String(f.value) : undefined}
                       onValueChange={(v) => f.onChange(Number(v))}
                       placeholder="Pilih bahan..."
