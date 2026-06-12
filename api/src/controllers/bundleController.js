@@ -268,3 +268,15 @@ exports.deleteBundle = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
+
+// TOGGLE ACTIVE
+exports.toggleActive = async (req, res) => {
+  try {
+    const bundle = await Bundle.findByPk(req.params.id);
+    if (!bundle) return res.status(404).json({ message: "Bundle not found" });
+    await bundle.update({ is_active: !bundle.is_active });
+    res.json({ message: "Bundle status updated", bundle });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};

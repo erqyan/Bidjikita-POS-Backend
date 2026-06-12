@@ -52,4 +52,12 @@ router.delete(
   bundleController.deleteBundle
 );
 
+// TOGGLE ACTIVE STATE (Admin only)
+router.patch(
+  "/:id/toggle-active",
+  authMiddleware,
+  adminMiddleware,
+  bundleController.toggleActive
+);
+
 module.exports = router;

@@ -283,15 +283,16 @@ export default function BundlesPage() {
     onError: () => { toast({ title: 'Gagal', description: 'Gagal menghapus bundle', variant: 'destructive' }); setDeleteTarget(null); },
   });
 
-  const handleToggleActive = async (b: Bundle) => {
-    try {
-      await apiClient.put(`/bundles/${b.id}`, { ...b, is_active: !b.is_active, items: b.BundleItems?.map((i) => ({ product_id: i.product_id, quantity: i.quantity })) });
+  const toggleActiveMutation = useMutation({
+    mutationFn: (bundleId: number) => apiClient.patch(`/bundles/${bundleId}/toggle-active`),
+    onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['all-bundles'] });
-      toast({ title: 'Berhasil', description: b.is_active ? 'Bundle dinonaktifkan' : 'Bundle diaktifkan', variant: 'success' });
-    } catch {
+      toast({ title: 'Berhasil', description: 'Status bundle diubah', variant: 'success' });
+    },
+    onError: () => {
       toast({ title: 'Gagal', description: 'Gagal mengubah status bundle', variant: 'destructive' });
-    }
-  };
+    },
+  });
 
   return (
     <div className="space-y-5">
@@ -377,7 +378,7 @@ export default function BundlesPage() {
 
                   <div className="flex gap-2 mt-2 pt-2 border-t">
                     <Button variant="outline" size="sm" className="flex-1" onClick={() => openEdit(b)}><Pencil className="h-3.5 w-3.5 mr-1" /> Edit</Button>
-                    <Button variant="ghost" size="sm" onClick={() => handleToggleActive(b)} title={b.is_active ? 'Nonaktifkan' : 'Aktifkan'}>
+                    <Button variant="ghost" size="sm" onClick={() => toggleActiveMutation.mutate(b.id)} title={b.is_active ? 'Nonaktifkan' : 'Aktifkan'}>
                       {b.is_active ? <ToggleRight className="h-4 w-4 text-green-600" /> : <ToggleLeft className="h-4 w-4 text-gray-400" />}
                     </Button>
                     <Button variant="ghost" size="sm" className="text-red-500 hover:bg-red-50" onClick={() => setDeleteTarget(b)}>
