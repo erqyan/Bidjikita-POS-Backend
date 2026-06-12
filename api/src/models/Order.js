@@ -34,7 +34,10 @@ const Order = sequelize.define(
       type: DataTypes.TEXT,
     },
   }
-);
+,
+  {
+    tableName: "orders",
+  });
 
 User.hasMany(Order, {
   foreignKey: "user_id",

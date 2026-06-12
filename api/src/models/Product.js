@@ -15,7 +15,10 @@ const Product = sequelize.define("Product", {
     type: DataTypes.BOOLEAN,
     defaultValue: true,
   },
-});
+  },
+  {
+    tableName: "products",
+  });
 
 Category.hasMany(Product, { foreignKey: "category_id" });
 Product.belongsTo(Category, { foreignKey: "category_id" });

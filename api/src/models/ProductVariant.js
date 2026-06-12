@@ -21,7 +21,10 @@ const ProductVariant = sequelize.define("ProductVariant", {
     defaultValue: 0,
     comment: "Fixed cost per serving: electricity, labor, packaging, etc.",
   },
-});
+  },
+  {
+    tableName: "product_variants",
+  });
 
 Product.hasMany(ProductVariant, { foreignKey: "product_id", onDelete: "CASCADE" });
 ProductVariant.belongsTo(Product, { foreignKey: "product_id" });

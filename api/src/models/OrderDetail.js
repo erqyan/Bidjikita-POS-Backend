@@ -47,7 +47,10 @@ const OrderDetail = sequelize.define("OrderDetail", {
     allowNull: true,
     comment: "JSON array of {product_id, quantity, variant_ids} for stock deduction and display",
   },
-});
+  },
+  {
+    tableName: "order_details",
+  });
 
 Order.hasMany(OrderDetail, { foreignKey: "order_id" });
 OrderDetail.belongsTo(Order, { foreignKey: "order_id" });

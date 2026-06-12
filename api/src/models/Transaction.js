@@ -57,7 +57,10 @@ const Transaction = sequelize.define(
       type: DataTypes.TEXT,
     },
   }
-);
+,
+  {
+    tableName: "transactions",
+  });
 
 // USER
 User.hasMany(Transaction, {

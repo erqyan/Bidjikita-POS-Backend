@@ -12,7 +12,10 @@ const User = sequelize.define("User", {
     defaultValue: true,
   },
   last_login: DataTypes.DATE,
-});
+  },
+  {
+    tableName: "users",
+  });
 
 Role.hasMany(User, {
   foreignKey: "role_id",
