@@ -1,491 +1,301 @@
-# ☕ Bidjikita POS Backend
+# Bidjikita POS
 
-Backend REST API untuk aplikasi Point of Sale (POS) coffee shop menggunakan:
+Point of Sale system for Bidjikita Coffee Roastery. Three components:
 
-- Node.js
-- Express.js
-- Sequelize ORM
-- MySQL / MariaDB
-- JWT Authentication
-
-Project ini mendukung:
-
-✅ Authentication & Authorization  
-✅ Role Management (Admin / Cashier)  
-✅ Category Management  
-✅ Product & Variant Management  
-✅ Shift Management  
-✅ Raw Material Management  
-✅ Recipe Management  
-✅ Order Management  
-✅ Transaction System  
-✅ Automatic Inventory Reduction  
-✅ JWT Security  
-✅ Professional Relational Database Structure  
+- **Backend API** — Node.js, Express, Sequelize, MySQL
+- **Admin Dashboard** — React, Vite, TypeScript, TailwindCSS
+- **Cashier App** — Flutter (separate project)
 
 ---
 
-# 📦 Tech Stack
+## Project Structure
 
-| Technology | Description |
-|---|---|
-| Node.js | JavaScript Runtime |
-| Express.js | Backend Framework |
-| Sequelize | ORM for MySQL |
-| MySQL / MariaDB | Database |
-| JWT | Authentication |
-| bcryptjs | Password Hashing |
-| dotenv | Environment Variables |
-| nodemon | Development Server |
-
----
-
-# 📁 Project Structure
-
-```bash
-bidjikita-pos-backend/
+```
+Bidjikita-POS-Backend/
+├── api/                          # Backend REST API
+│   ├── src/
+│   │   ├── config/database.js
+│   │   ├── controllers/          # Request handlers
+│   │   ├── middleware/            # Auth, admin, upload
+│   │   ├── models/               # Sequelize models
+│   │   ├── routes/               # Express routes
+│   │   └── services/             # Stock deduction
+│   ├── server.js
+│   └── .env
 │
-├── src/
-│   ├── config/
-│   │   └── database.js
-│   │
-│   ├── controllers/
-│   │   ├── authController.js
-│   │   ├── categoryController.js
-│   │   ├── productController.js
-│   │   ├── variantController.js
-│   │   ├── shiftController.js
-│   │   ├── rawMaterialController.js
-│   │   ├── recipeController.js
-│   │   ├── orderController.js
-│   │   └── transactionController.js
-│   │
-│   ├── middleware/
-│   │   ├── authMiddleware.js
-│   │   └── adminMiddleware.js
-│   │
-│   ├── models/
-│   │   ├── User.js
-│   │   ├── Role.js
-│   │   ├── Category.js
-│   │   ├── Product.js
-│   │   ├── ProductVariant.js
-│   │   ├── Shift.js
-│   │   ├── ShiftUser.js
-│   │   ├── RawMaterial.js
-│   │   ├── Recipe.js
-│   │   ├── RecipeDetail.js
-│   │   ├── Order.js
-│   │   ├── OrderDetail.js
-│   │   └── Transaction.js
-│   │
-│   ├── routes/
-│   │   ├── authRoutes.js
-│   │   ├── categoryRoutes.js
-│   │   ├── productRoutes.js
-│   │   ├── variantRoutes.js
-│   │   ├── shiftRoutes.js
-│   │   ├── rawMaterialRoutes.js
-│   │   ├── recipeRoutes.js
-│   │   ├── orderRoutes.js
-│   │   └── transactionRoutes.js
-│   │
-│   ├── services/
-│   │   └── stockService.js
-│   │
-│   └── app.js
+├── dashboard/                    # Admin web dashboard
+│   └── src/
+│       ├── api/                  # API client functions
+│       ├── components/ui/        # Reusable UI components
+│       ├── lib/                  # Utils, API client config
+│       ├── pages/                # Page components
+│       ├── store/                # Zustand stores
+│       └── types/                # TypeScript interfaces
 │
-├── .env
-├── .env.example
-├── .gitignore
-├── package.json
-├── package-lock.json
-├── README.md
-└── server.js
+└── (kasir_bidjikita)             # Flutter cashier — separate repo
 ```
 
 ---
 
-# ⚙️ Installation
+## Features
 
-## 1. Clone Repository
+### Admin Dashboard
 
-```bash
-git clone https://github.com/erqyan/Bidjikita-POS-Backend.git
-```
+- **Dashboard** — Revenue summary, stock alerts, top products chart
+- **Menu Management** — Products with multi-variant support, each variant has its own price, overhead cost, and ingredient list. Target profit margin with automatic price calculation.
+- **Bahan Baku** — Raw material inventory with sortable columns, stock status indicators, and per-ingredient audit log tracking all additions and deductions.
+- **Bundling** — Product bundles with price comparison against individual items, profit/cost calculation, and image collage from constituent products.
+- **Transaksi** — Transaction history with date range filter, cashier filter, payment method filter, and invoice search. Detail view groups bundle purchases and shows bundle price.
+- **Laporan Keuangan** — Financial report with date range selection, summary cards (revenue, cost, profit), payment method breakdown, top products, full transaction list. Export to Excel (xlsx) or PDF (print).
+- **Analitik** — Revenue trend chart, net profit chart (revenue vs cost vs profit), payment method distribution pie chart, top products bar chart with value labels.
+- **Users** — User management with role assignment.
+
+### Backend API
+
+- JWT authentication with admin/cashier roles
+- Product variants with nested ingredient creation/update
+- Bundle CRUD with automatic cost calculation from variant ingredients
+- Order creation with automatic variant resolution and stock deduction
+- Transaction processing with invoice generation
+- Ingredient audit log tracking every stock change (manual adjustments and order deductions)
+- Financial report endpoint aggregating revenue, cost, and profit across date ranges
+- Analytics endpoints for dashboard charts and summaries
+- Product update preserves variant IDs to prevent bundle references from breaking
+
+### Cashier App (Flutter)
+
+- Product catalog with category filter, search, and bundle support
+- Variant selection dialog with quantity stepper
+- Cart with order type (dine-in / takeaway)
+- Cash and QRIS payment flow with change calculation
+- Bundle items sent as single order lines with expanded contents for stock tracking
+- Order and transaction creation via API
 
 ---
 
-## 2. Masuk ke Folder Project
+## Installation
+
+### Prerequisites
+
+- Node.js 18+
+- MySQL 8+
+- npm
+
+### 1. Clone and install
 
 ```bash
+git clone <repo-url>
 cd Bidjikita-POS-Backend
-```
 
----
-
-## 3. Install Dependencies
-
-```bash
+# Install root dependencies
 npm install
+
+# Install API dependencies
+cd api && npm install
+
+# Install dashboard dependencies
+cd ../dashboard && npm install
 ```
 
----
+### 2. Environment configuration
 
-# 🛠️ Environment Configuration
-
-Buat file:
-
-```bash
-.env
-```
-
-Lalu isi:
+Create `api/.env`:
 
 ```env
 PORT=5000
-
 DB_HOST=localhost
 DB_USER=root
 DB_PASSWORD=
 DB_NAME=bidjikita_pos
-
 JWT_SECRET=your_secret_key
 ```
 
----
+Create `dashboard/.env`:
 
-# 🗄️ Database Setup
+```env
+VITE_API_URL=http://localhost:5000/api
+```
 
-## 1. Buat Database
-
-Masuk MySQL:
+### 3. Database
 
 ```sql
 CREATE DATABASE bidjikita_pos;
 ```
 
----
+The backend uses `sequelize.sync()` to create tables on startup.
 
-## 2. Jalankan Backend
-
-```bash
-npm run dev
-```
-
-Jika berhasil:
+### 4. Run
 
 ```bash
-Database connected
-Server running on port 5000
+# API server
+cd api && npm run dev
+
+# Dashboard (separate terminal)
+cd dashboard && npm run dev
 ```
 
 ---
 
-# 🔐 Authentication
+## API Endpoints
 
-Project menggunakan:
+Base URL: `http://localhost:5000/api`
 
-- JWT Authentication
-- Role Based Authorization
-
-## Roles
-
-| Role | Access |
-|---|---|
-| Admin | Full Access |
-| Cashier | Order & Transaction |
-
----
-
-# 📮 Postman Collection
-
-API Collection tersedia di:
-
-🔗
-https://material-architect-13385944-9945002.postman.co/workspace/REGIANA-HERMAWAN's-Workspace~c4c86998-0917-4a17-834d-92736501cdf9/collection/50411160-d7ab077d-9bcf-409a-8a9b-561d05fcea3b?action=share&creator=50411160
-
----
-
-# 📚 API Documentation
-
-Base URL:
-
-```http
-http://localhost:5000/api
-```
-
----
-
-# 🔑 Auth Endpoints
-
-| Method | Endpoint |
-|---|---|
-| POST | /auth/register |
-| POST | /auth/login |
-
----
-
-# 📂 Category Endpoints
+### Authentication
 
 | Method | Endpoint | Access |
-|---|---|---|
-| GET | /categories | Public |
-| POST | /categories | Admin |
-| PUT | /categories/:id | Admin |
-| DELETE | /categories/:id | Admin |
+|--------|----------|--------|
+| POST | `/auth/register` | Admin |
+| POST | `/auth/login` | Public |
 
----
-
-# ☕ Product Endpoints
+### Products
 
 | Method | Endpoint | Access |
-|---|---|---|
-| GET | /products | Public |
-| GET | /products/:id | Public |
-| POST | /products | Admin |
-| PUT | /products/:id | Admin |
-| DELETE | /products/:id | Admin |
+|--------|----------|--------|
+| GET | `/products` | Public |
+| GET | `/products/:id` | Public |
+| POST | `/products` | Admin |
+| PUT | `/products/:id` | Admin |
+| DELETE | `/products/:id` | Admin |
 
----
-
-# 🧩 Variant Endpoints
+### Categories
 
 | Method | Endpoint | Access |
-|---|---|---|
-| GET | /variants | Public |
-| GET | /variants/:id | Public |
-| POST | /variants | Admin |
-| PUT | /variants/:id | Admin |
-| DELETE | /variants/:id | Admin |
+|--------|----------|--------|
+| GET | `/categories` | Public |
+| POST | `/categories` | Admin |
+| PUT | `/categories/:id` | Admin |
+| DELETE | `/categories/:id` | Admin |
 
----
-
-# 👥 Shift Endpoints
+### Raw Materials
 
 | Method | Endpoint | Access |
-|---|---|---|
-| GET | /shifts | Login User |
-| GET | /shifts/:id | Login User |
-| POST | /shifts | Admin |
-| PUT | /shifts/:id | Admin |
-| DELETE | /shifts/:id | Admin |
+|--------|----------|--------|
+| GET | `/raw-materials` | Authenticated |
+| GET | `/raw-materials/:id` | Authenticated |
+| GET | `/raw-materials/:id/logs` | Authenticated |
+| POST | `/raw-materials` | Admin |
+| PUT | `/raw-materials/:id` | Admin |
+| DELETE | `/raw-materials/:id` | Admin |
 
----
-
-# 🧱 Raw Material Endpoints
-
-| Method | Endpoint | Access |
-|---|---|---|
-| GET | /raw-materials | Login User |
-| GET | /raw-materials/:id | Login User |
-| POST | /raw-materials | Admin |
-| PUT | /raw-materials/:id | Admin |
-| DELETE | /raw-materials/:id | Admin |
-
----
-
-# 📖 Recipe Endpoints
+### Bundles
 
 | Method | Endpoint | Access |
-|---|---|---|
-| GET | /recipes | Login User |
-| GET | /recipes/:id | Login User |
-| POST | /recipes | Admin |
-| PUT | /recipes/:id | Admin |
-| DELETE | /recipes/:id | Admin |
+|--------|----------|--------|
+| GET | `/bundles` | Public (active only) |
+| GET | `/bundles/all/admin` | Admin (all) |
+| GET | `/bundles/:id` | Public |
+| POST | `/bundles` | Admin |
+| PUT | `/bundles/:id` | Admin |
+| DELETE | `/bundles/:id` | Admin |
 
----
-
-# 🧾 Order Endpoints
-
-| Method | Endpoint | Access |
-|---|---|---|
-| GET | /orders | Admin & Cashier |
-| GET | /orders/:id | Admin & Cashier |
-| POST | /orders | Admin & Cashier |
-| PUT | /orders/:id | Admin & Cashier |
-| DELETE | /orders/:id | Admin & Cashier |
-
----
-
-# 💳 Transaction Endpoints
+### Orders
 
 | Method | Endpoint | Access |
-|---|---|---|
-| GET | /transactions | Admin & Cashier |
-| GET | /transactions/:id | Admin & Cashier |
-| POST | /transactions | Admin & Cashier |
-| PUT | /transactions/:id | Admin & Cashier |
-| DELETE | /transactions/:id | Admin & Cashier |
+|--------|----------|--------|
+| GET | `/orders` | Authenticated |
+| GET | `/orders/:id` | Authenticated |
+| POST | `/orders` | Authenticated |
+| PUT | `/orders/:id` | Authenticated |
+| DELETE | `/orders/:id` | Authenticated |
+
+### Transactions
+
+| Method | Endpoint | Access |
+|--------|----------|--------|
+| GET | `/transactions` | Authenticated |
+| GET | `/transactions/:id` | Authenticated |
+| POST | `/transactions` | Authenticated |
+| PUT | `/transactions/:id` | Admin |
+| DELETE | `/transactions/:id` | Admin |
+
+### Analytics
+
+| Method | Endpoint | Access |
+|--------|----------|--------|
+| GET | `/analytics/summary` | Admin |
+| GET | `/analytics/revenue` | Admin |
+| GET | `/analytics/profit` | Admin |
+| GET | `/analytics/top-products` | Admin |
+| GET | `/analytics/payment-methods` | Admin |
+| GET | `/analytics/financial-report` | Admin |
+
+### Users
+
+| Method | Endpoint | Access |
+|--------|----------|--------|
+| GET | `/users` | Admin |
+| POST | `/users` | Admin |
+| PUT | `/users/:id` | Admin |
+| DELETE | `/users/:id` | Admin |
 
 ---
 
-# ☕ Inventory Flow
+## Example API Payloads
 
-```text
-Raw Material
-      ↓
-Recipe
-      ↓
-Order
-      ↓
-Stock Automatically Reduced
-      ↓
-Transaction
-```
-
----
-
-# 🧾 Example Order Request
+### Create order
 
 ```json
 {
-  "shift_id": 5,
-  "notes": "Customer dine in",
-
   "items": [
     {
-      "product_id": 6,
-      "variant_id": 4,
-      "quantity": 3
+      "product_id": 1,
+      "quantity": 2,
+      "variant_ids": [1]
+    },
+    {
+      "bundle_id": 5,
+      "bundle_name": "Paket Hemat",
+      "bundle_price": 32000,
+      "quantity": 1,
+      "bundle_items": [
+        { "product_id": 4, "quantity": 1, "variant_ids": [], "product_name": "Gula Aren" },
+        { "product_id": 5, "quantity": 1, "variant_ids": [], "product_name": "Donat" }
+      ]
     }
   ]
 }
 ```
 
----
-
-# 📖 Example Recipe Request
+### Create raw material
 
 ```json
 {
-  "recipe_name": "Americano Medium",
-  "product_id": 6,
-  "variant_id": 4,
-
-  "materials": [
-    {
-      "raw_material_id": 6,
-      "quantity": 20
-    },
-    {
-      "raw_material_id": 5,
-      "quantity": 200
-    },
-    {
-      "raw_material_id": 4,
-      "quantity": 1
-    }
-  ]
-}
-```
-
----
-
-# 🧱 Example Raw Material Request
-
-```json
-{
-  "material_name": "Robusta",
+  "material_name": "Arabica Beans",
   "unit": "gram",
   "stock": 5000,
-  "minimum_stock": 500
+  "minimum_stock": 500,
+  "cost_per_unit": 0.15
+}
+```
+
+### Create bundle
+
+FormData with fields: `bundle_name`, `description`, `bundle_price`, `items` (JSON), optional `image` file.
+
+```json
+{
+  "items": [
+    { "product_id": 1, "variant_id": 2, "quantity": 1 },
+    { "product_id": 3, "quantity": 2 }
+  ]
 }
 ```
 
 ---
 
-# 🗃️ Database Relations
+## Key Design Decisions
 
-```text
-roles
-   ↓
-users
-
-categories
-   ↓
-products
-   ↓
-product_variants
-
-products
-   ↓
-recipes
-   ↓
-recipedetails
-   ↓
-raw_materials
-
-shifts
-   ↓
-shift_users
-   ↓
-users
-
-users
-   ↓
-orders
-   ↓
-order_details
-   ↓
-products
-   ↓
-product_variants
-
-orders
-   ↓
-transactions
-```
+- **Variants own pricing and ingredients** — Each product variant has its own price, overhead cost, and ingredient list. Recipes are defined per variant, not per product.
+- **Bundle cost is auto-calculated** — When creating or updating a bundle, the system resolves each item's variant cost from ingredient usage and overhead.
+- **Stock deduction happens per product variant** — When an order is placed, raw material stock is reduced based on the variant's ingredient quantities.
+- **Product edits preserve variant IDs** — Variants are matched by name on update, avoiding orphaned references in bundles.
+- **Bundle orders store expanded contents** — The bundle line item in an order stores the constituent products as JSON for stock tracking and display.
+- **Ingredient audit log** — Every stock change (manual adjustment or order deduction) is recorded with before/after values, user, and timestamps.
 
 ---
 
-# 🔒 Security Features
+## Development
 
-✅ Password Hashing using bcryptjs  
-✅ JWT Authentication  
-✅ Role Based Authorization  
-✅ Duplicate Validation  
-✅ Foreign Key Validation  
-✅ Inventory Protection  
-✅ Recipe Protection  
-✅ Protected Raw Material Deletion  
+**Regiana Hermawan** — Backend API
 
----
-
-# 🚀 Development
-
-Run development server:
-
-```bash
-npm run dev
-```
-
----
-
-# 📌 Future Improvements
-
-- Payment Gateway
-- Receipt Printing
-- Dashboard Analytics
-- Sales Reports
-- Stock Notifications
-- Sequelize Migration
-- Refresh Token Authentication
-- Soft Delete
-- Audit Logs
-
----
-
-# 👨‍💻 Author
-
-**Regiana Hermawan**
-
-GitHub:
-https://github.com/erqyan
-
----
-
-# 📄 License
-
-This project is for educational and learning purposes.
+**Muhammad Abiyyu Nizar** — Dashboard, Flutter Cashier App

@@ -143,7 +143,7 @@ export default function LoginPage() {
             </form>
           </div>
           <p className="text-center text-xs text-gray-400 mt-6">
-            © 2024 Bidjikita POS. Hak cipta dilindungi.
+            © 2026 Bidjikita POS. Hak cipta dilindungi.
           </p>
         </div>
       </div>
