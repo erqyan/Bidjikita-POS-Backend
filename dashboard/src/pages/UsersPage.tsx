@@ -4,6 +4,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Plus, Pencil, Trash2, Key, ToggleLeft, ToggleRight } from 'lucide-react';
+import { useAuthStore } from '@/store/authStore';
 import {
   getUsers, createUser, updateUser, toggleUserActive, changePassword, deleteUser,
 } from '@/api/users';
@@ -21,7 +22,6 @@ import {
 import { EmptyState } from '@/components/ui/EmptyState';
 import { PageLoader } from '@/components/ui/Spinner';
 import { useToast } from '@/store/toastStore';
-import { useAuthStore } from '@/store/authStore';
 import { formatDateTime } from '@/lib/utils';
 
 const createSchema = z.object({
@@ -74,7 +74,15 @@ export default function UsersPage() {
 
   const editMutation = useMutation({
     mutationFn: (data: EditForm) => updateUser(editTarget!.id, data),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ['users'] }); toast({ title: 'Berhasil', description: 'Data pengguna diperbarui', variant: 'success' }); setEditTarget(null); },
+    onSuccess: (_result, variables) => {
+      qc.invalidateQueries({ queryKey: ['users'] });
+      const curr = useAuthStore.getState().user;
+      if (curr && editTarget?.id === curr.id && variables.full_name) {
+        useAuthStore.getState().updateUser({ full_name: variables.full_name });
+      }
+      toast({ title: 'Berhasil', description: 'Data pengguna diperbarui', variant: 'success' });
+      setEditTarget(null);
+    },
     onError: (err: unknown) => { toast({ title: 'Gagal', description: (err as { response?: { data?: { message?: string } } })?.response?.data?.message || 'Error', variant: 'destructive' }); },
   });
 
