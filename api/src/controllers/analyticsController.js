@@ -26,7 +26,7 @@ exports.getSummary = async (req, res) => {
   try {
     const [todayRevenueRows] = await sequelize.query(
       `SELECT COALESCE(SUM(total_amount), 0) AS value
-       FROM Transactions
+       FROM transactions
        WHERE payment_status = 'paid'
          AND DATE(transaction_date) = CURDATE()`,
       { type: QueryTypes.SELECT }
@@ -34,14 +34,14 @@ exports.getSummary = async (req, res) => {
 
     const [todayOrdersRows] = await sequelize.query(
       `SELECT COUNT(id) AS value
-       FROM Orders
+       FROM orders
        WHERE DATE(createdAt) = CURDATE()`,
       { type: QueryTypes.SELECT }
     );
 
     const [totalProductsRows] = await sequelize.query(
       `SELECT COUNT(id) AS value
-       FROM Products
+       FROM products
        WHERE is_active = true`,
       { type: QueryTypes.SELECT }
     );
@@ -55,7 +55,7 @@ exports.getSummary = async (req, res) => {
 
     const [weeklyRevenueRows] = await sequelize.query(
       `SELECT COALESCE(SUM(total_amount), 0) AS value
-       FROM Transactions
+       FROM transactions
        WHERE payment_status = 'paid'
          AND transaction_date >= DATE_SUB(NOW(), INTERVAL 7 DAY)`,
       { type: QueryTypes.SELECT }
@@ -63,7 +63,7 @@ exports.getSummary = async (req, res) => {
 
     const [monthlyRevenueRows] = await sequelize.query(
       `SELECT COALESCE(SUM(total_amount), 0) AS value
-       FROM Transactions
+       FROM transactions
        WHERE payment_status = 'paid'
          AND transaction_date >= DATE_SUB(NOW(), INTERVAL 30 DAY)`,
       { type: QueryTypes.SELECT }
@@ -91,7 +91,7 @@ exports.getRevenueTrend = async (req, res) => {
       `SELECT DATE(transaction_date) AS date,
               COALESCE(SUM(total_amount), 0) AS revenue,
               COUNT(id) AS orders
-       FROM Transactions
+       FROM transactions
        WHERE payment_status = 'paid'
          AND transaction_date >= DATE_SUB(NOW(), INTERVAL :days DAY)
        GROUP BY DATE(transaction_date)
@@ -140,8 +140,8 @@ exports.getTopProducts = async (req, res) => {
       `SELECT p.product_name,
               CAST(SUM(od.quantity) AS UNSIGNED) AS total_quantity,
               COALESCE(SUM(od.subtotal), 0) AS total_revenue
-       FROM OrderDetails od
-       INNER JOIN Products p ON od.product_id = p.id
+       FROM orderdetails od
+       INNER JOIN products p ON od.product_id = p.id
        GROUP BY p.id, p.product_name
        ORDER BY total_quantity DESC
        LIMIT :limit`,
@@ -169,7 +169,7 @@ exports.getPaymentMethodStats = async (req, res) => {
       `SELECT payment_method,
               COUNT(id) AS count,
               COALESCE(SUM(total_amount), 0) AS total
-       FROM Transactions
+       FROM transactions
        WHERE payment_status = 'paid'
          AND transaction_date >= DATE_SUB(NOW(), INTERVAL :days DAY)
        GROUP BY payment_method`,
@@ -213,9 +213,9 @@ exports.getProfitTrend = async (req, res) => {
               od.quantity AS od_qty,
               od.bundle_items_json,
               od.id AS od_id
-       FROM Transactions t
-       JOIN Orders o ON o.id = t.order_id
-       JOIN OrderDetails od ON od.order_id = o.id
+       FROM transactions t
+       JOIN orders o ON o.id = t.order_id
+       JOIN orderdetails od ON od.order_id = o.id
        WHERE t.payment_status = 'paid'
          AND t.transaction_date >= DATE_SUB(NOW(), INTERVAL :days DAY)
        ORDER BY t.transaction_date ASC`,
@@ -255,7 +255,7 @@ exports.getProfitTrend = async (req, res) => {
     const revRows = await sequelize.query(
       `SELECT DATE(transaction_date) AS date,
               COALESCE(SUM(total_amount), 0) AS revenue
-       FROM Transactions
+       FROM transactions
        WHERE payment_status = 'paid'
          AND transaction_date >= DATE_SUB(NOW(), INTERVAL :days DAY)
        GROUP BY DATE(transaction_date)`,
@@ -298,7 +298,7 @@ exports.getProfitTrend = async (req, res) => {
         // Regular item — calculate cost via OrderDetailVariants
         const odVariants = await sequelize.query(
           `SELECT odv.variant_id
-           FROM OrderDetailVariants odv
+           FROM orderdetailvariants odv
            WHERE odv.order_detail_id = :odId`,
           { replacements: { odId: row.od_id }, type: QueryTypes.SELECT }
         );
@@ -349,7 +349,7 @@ exports.getFinancialReport = async (req, res) => {
     // Summary
     const [sum] = await sequelize.query(
       `SELECT COALESCE(SUM(total_amount),0) AS revenue, COUNT(id) AS tx_count
-       FROM Transactions WHERE payment_status='paid' AND transaction_date BETWEEN :from AND :to`,
+       FROM transactions WHERE payment_status='paid' AND transaction_date BETWEEN :from AND :to`,
       { replacements: { from: fromDate, to: toDate }, type: QueryTypes.SELECT }
     );
     const revenue = parseFloat(sum.revenue) || 0;
@@ -359,14 +359,14 @@ exports.getFinancialReport = async (req, res) => {
     const [costRows] = await sequelize.query(
       `SELECT COALESCE(SUM(od.quantity * COALESCE((
         SELECT SUM(vi.quantity*rm.cost_per_unit) + COALESCE(MAX(pv_first.overhead_cost),0)
-        FROM OrderDetailVariants odv
+        FROM orderdetailvariants odv
         JOIN productvariants pv_first ON pv_first.id=odv.variant_id
         JOIN variantingredients vi ON vi.variant_id=pv_first.id
         JOIN rawmaterials rm ON rm.id=vi.raw_material_id
         WHERE odv.order_detail_id=od.id
       ),0)),0) AS regular_cost
-       FROM Transactions t JOIN Orders o ON o.id=t.order_id
-       JOIN OrderDetails od ON od.order_id=o.id
+       FROM transactions t JOIN orders o ON o.id=t.order_id
+       JOIN orderdetails od ON od.order_id=o.id
        WHERE t.payment_status='paid' AND t.transaction_date BETWEEN :from AND :to
          AND od.bundle_items_json IS NULL`,
       { replacements: { from: fromDate, to: toDate }, type: QueryTypes.SELECT }
@@ -374,8 +374,8 @@ exports.getFinancialReport = async (req, res) => {
 
     // Bundle cost
     const bundleRows = await sequelize.query(
-      `SELECT od.bundle_items_json, od.quantity FROM Transactions t
-       JOIN Orders o ON o.id=t.order_id JOIN OrderDetails od ON od.order_id=o.id
+      `SELECT od.bundle_items_json, od.quantity FROM transactions t
+       JOIN orders o ON o.id=t.order_id JOIN orderdetails od ON od.order_id=o.id
        WHERE t.payment_status='paid' AND t.transaction_date BETWEEN :from AND :to
          AND od.bundle_items_json IS NOT NULL`,
       { replacements: { from: fromDate, to: toDate }, type: QueryTypes.SELECT }
@@ -417,7 +417,7 @@ exports.getFinancialReport = async (req, res) => {
     // Daily
     const dailyRows = await sequelize.query(
       `SELECT DATE(transaction_date) AS date, COUNT(id) AS orders, COALESCE(SUM(total_amount),0) AS revenue
-       FROM Transactions WHERE payment_status='paid' AND transaction_date BETWEEN :from AND :to
+       FROM transactions WHERE payment_status='paid' AND transaction_date BETWEEN :from AND :to
        GROUP BY DATE(transaction_date) ORDER BY date ASC`,
       { replacements: { from: fromDate, to: toDate }, type: QueryTypes.SELECT }
     );
@@ -425,7 +425,7 @@ exports.getFinancialReport = async (req, res) => {
     // Payment methods
     const pmRows = await sequelize.query(
       `SELECT payment_method, COUNT(id) AS count, COALESCE(SUM(total_amount),0) AS total
-       FROM Transactions WHERE payment_status='paid' AND transaction_date BETWEEN :from AND :to
+       FROM transactions WHERE payment_status='paid' AND transaction_date BETWEEN :from AND :to
        GROUP BY payment_method`,
       { replacements: { from: fromDate, to: toDate }, type: QueryTypes.SELECT }
     );
@@ -433,8 +433,8 @@ exports.getFinancialReport = async (req, res) => {
     // Top products
     const topRows = await sequelize.query(
       `SELECT p.product_name, CAST(SUM(od.quantity) AS UNSIGNED) AS qty, COALESCE(SUM(od.subtotal),0) AS revenue
-       FROM OrderDetails od JOIN Products p ON od.product_id=p.id
-       JOIN Orders o ON o.id=od.order_id JOIN Transactions t ON t.order_id=o.id
+       FROM orderdetails od JOIN products p ON od.product_id=p.id
+       JOIN orders o ON o.id=od.order_id JOIN transactions t ON t.order_id=o.id
        WHERE t.payment_status='paid' AND t.transaction_date BETWEEN :from AND :to
        GROUP BY p.id, p.product_name ORDER BY qty DESC LIMIT 20`,
       { replacements: { from: fromDate, to: toDate }, type: QueryTypes.SELECT }
@@ -443,7 +443,7 @@ exports.getFinancialReport = async (req, res) => {
     // All transactions
     const txRows = await sequelize.query(
       `SELECT t.id, t.invoice_number, t.transaction_date, t.total_amount, t.payment_method, u.full_name AS cashier
-       FROM Transactions t LEFT JOIN users u ON u.id=t.user_id
+       FROM transactions t LEFT JOIN users u ON u.id=t.user_id
        WHERE t.payment_status='paid' AND t.transaction_date BETWEEN :from AND :to
        ORDER BY t.transaction_date DESC`,
       { replacements: { from: fromDate, to: toDate }, type: QueryTypes.SELECT }
