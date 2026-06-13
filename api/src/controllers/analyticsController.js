@@ -140,7 +140,7 @@ exports.getTopProducts = async (req, res) => {
       `SELECT p.product_name,
               CAST(SUM(od.quantity) AS UNSIGNED) AS total_quantity,
               COALESCE(SUM(od.subtotal), 0) AS total_revenue
-       FROM orderdetails od
+       FROM order_details od
        INNER JOIN products p ON od.product_id = p.id
        GROUP BY p.id, p.product_name
        ORDER BY total_quantity DESC
@@ -215,7 +215,7 @@ exports.getProfitTrend = async (req, res) => {
               od.id AS od_id
        FROM transactions t
        JOIN orders o ON o.id = t.order_id
-       JOIN orderdetails od ON od.order_id = o.id
+       JOIN order_details od ON od.order_id = o.id
        WHERE t.payment_status = 'paid'
          AND t.transaction_date >= DATE_SUB(NOW(), INTERVAL :days DAY)
        ORDER BY t.transaction_date ASC`,
@@ -366,7 +366,7 @@ exports.getFinancialReport = async (req, res) => {
         WHERE odv.order_detail_id=od.id
       ),0)),0) AS regular_cost
        FROM transactions t JOIN orders o ON o.id=t.order_id
-       JOIN orderdetails od ON od.order_id=o.id
+       JOIN order_details od ON od.order_id=o.id
        WHERE t.payment_status='paid' AND t.transaction_date BETWEEN :from AND :to
          AND od.bundle_items_json IS NULL`,
       { replacements: { from: fromDate, to: toDate }, type: QueryTypes.SELECT }
@@ -375,7 +375,7 @@ exports.getFinancialReport = async (req, res) => {
     // Bundle cost
     const bundleRows = await sequelize.query(
       `SELECT od.bundle_items_json, od.quantity FROM transactions t
-       JOIN orders o ON o.id=t.order_id JOIN orderdetails od ON od.order_id=o.id
+       JOIN orders o ON o.id=t.order_id JOIN order_details od ON od.order_id=o.id
        WHERE t.payment_status='paid' AND t.transaction_date BETWEEN :from AND :to
          AND od.bundle_items_json IS NOT NULL`,
       { replacements: { from: fromDate, to: toDate }, type: QueryTypes.SELECT }
@@ -433,7 +433,7 @@ exports.getFinancialReport = async (req, res) => {
     // Top products
     const topRows = await sequelize.query(
       `SELECT p.product_name, CAST(SUM(od.quantity) AS UNSIGNED) AS qty, COALESCE(SUM(od.subtotal),0) AS revenue
-       FROM orderdetails od JOIN products p ON od.product_id=p.id
+       FROM order_details od JOIN products p ON od.product_id=p.id
        JOIN orders o ON o.id=od.order_id JOIN transactions t ON t.order_id=o.id
        WHERE t.payment_status='paid' AND t.transaction_date BETWEEN :from AND :to
        GROUP BY p.id, p.product_name ORDER BY qty DESC LIMIT 20`,
