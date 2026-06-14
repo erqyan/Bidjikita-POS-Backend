@@ -232,7 +232,7 @@ export default function OrdersPage() {
             className="w-44"
           />
         )}
-        <Button onClick={() => setReportOpen(true)} size="sm"><Download className="h-4 w-4 mr-1" /> Laporan</Button>
+        <Button onClick={() => { setRptFrom(dateFrom); setRptTo(dateTo); setReportOpen(true); }} size="sm"><Download className="h-4 w-4 mr-1" /> Laporan</Button>
         {hasActiveFilters && (
           <Button variant="outline" size="sm" onClick={resetFilters}>
             Reset
@@ -417,12 +417,12 @@ export default function OrdersPage() {
                   <p className="text-sm text-gray-400">{report.period.from} s.d. {report.period.to}</p>
                 </div>
 
-                <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
-                  <div className="rounded-xl bg-green-50 p-3 text-center"><p className="text-[11px] text-green-600 font-medium">Pendapatan</p><p className="text-sm font-bold text-green-700">{formatCurrency(report.summary.revenue)}</p></div>
-                  <div className="rounded-xl bg-red-50 p-3 text-center"><p className="text-[11px] text-red-600 font-medium">Biaya Produksi</p><p className="text-sm font-bold text-red-700">{formatCurrency(report.summary.cost)}</p></div>
-                  <div className="rounded-xl bg-amber-50 p-3 text-center"><p className="text-[11px] text-amber-600 font-medium">Keuntungan Bersih</p><p className="text-sm font-bold text-amber-700">{formatCurrency(report.summary.profit)} ({report.summary.profitPct}%)</p></div>
-                  <div className="rounded-xl bg-blue-50 p-3 text-center"><p className="text-[11px] text-blue-600 font-medium">Total Transaksi</p><p className="text-sm font-bold text-blue-700">{report.summary.txCount}</p></div>
-                  <div className="rounded-xl bg-purple-50 p-3 text-center"><p className="text-[11px] text-purple-600 font-medium">Rata-rata</p><p className="text-sm font-bold text-purple-700">{formatCurrency(report.summary.avgTx)}</p></div>
+                <div className="flex flex-wrap gap-3">
+                  <div className="flex-1 min-w-[140px] rounded-xl bg-green-50 p-3 text-center"><p className="text-[11px] text-green-600 font-medium">Pendapatan</p><p className="text-sm font-bold text-green-700 break-words">{formatCurrency(report.summary.revenue)}</p></div>
+                  <div className="flex-1 min-w-[140px] rounded-xl bg-red-50 p-3 text-center"><p className="text-[11px] text-red-600 font-medium">Biaya Produksi</p><p className="text-sm font-bold text-red-700 break-words">{formatCurrency(report.summary.cost)}</p></div>
+                  <div className="flex-1 min-w-[140px] rounded-xl bg-amber-50 p-3 text-center"><p className="text-[11px] text-amber-600 font-medium">Keuntungan Bersih</p><p className="text-sm font-bold text-amber-700 break-words">{formatCurrency(report.summary.profit)} ({report.summary.profitPct}%)</p></div>
+                  <div className="flex-1 min-w-[140px] rounded-xl bg-blue-50 p-3 text-center"><p className="text-[11px] text-blue-600 font-medium">Total Transaksi</p><p className="text-sm font-bold text-blue-700 break-words">{report.summary.txCount}</p></div>
+                  <div className="flex-1 min-w-[140px] rounded-xl bg-purple-50 p-3 text-center"><p className="text-[11px] text-purple-600 font-medium">Rata-rata</p><p className="text-sm font-bold text-purple-700 break-words">{formatCurrency(report.summary.avgTx)}</p></div>
                 </div>
 
                 <div>

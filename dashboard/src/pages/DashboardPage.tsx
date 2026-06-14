@@ -186,7 +186,7 @@ export default function DashboardPage() {
             ) : (
               <div className="divide-y divide-gray-100">
                 {recentTransactions.map((tx) => (
-                  <div key={tx.id} className="flex items-center justify-between px-6 py-3">
+                  <div key={tx.id} className="flex items-center justify-between px-6 py-3 cursor-pointer hover:bg-gray-50" onClick={() => navigate("/orders")}>
                     <div className="min-w-0">
                       <p className="text-sm font-medium text-gray-900 truncate">{tx.invoice_number}</p>
                       <p className="text-xs text-gray-500">{formatDateTime(tx.transaction_date)}</p>

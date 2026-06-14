@@ -8,6 +8,7 @@ const VariantIngredient = require("../models/VariantIngredient");
 const RawMaterial = require("../models/RawMaterial");
 const BundleItem = require("../models/BundleItem");
 const Bundle = require("../models/Bundle");
+const OrderDetail = require("../models/OrderDetail");
 
 /** Delete an uploaded product image file (non-blocking, errors are just warned). */
 function deleteUploadedFile(imageUrl) {
@@ -398,6 +399,14 @@ exports.deleteProduct = async (req, res) => {
         .join(", ");
       return res.status(400).json({
         message: `Menu ini terdapat dalam bundel: ${bundleNames}. Hapus dari bundel terlebih dahulu sebelum menghapus menu.`,
+      });
+    }
+
+    // Check if product has order history
+    const orderCount = await OrderDetail.count({ where: { product_id: product.id } });
+    if (orderCount > 0) {
+      return res.status(400).json({
+        message: `Menu ini tidak dapat dihapus karena sudah tercatat dalam ${orderCount} transaksi. Nonaktifkan saja jika tidak ingin digunakan lagi.`,
       });
     }
 

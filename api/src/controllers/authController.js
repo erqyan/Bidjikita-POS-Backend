@@ -74,7 +74,7 @@ exports.login = async (req, res) => {
 
     if (!user) {
       return res.status(404).json({
-        message: "User not found",
+        message: "Username tidak ditemukan",
       });
     }
 
@@ -86,7 +86,7 @@ exports.login = async (req, res) => {
 
     if (!validPassword) {
       return res.status(400).json({
-        message: "Wrong password",
+        message: "Password salah",
       });
     }
     await user.update({

@@ -52,8 +52,16 @@ exports.createOrder = async (req, res) => {
       return res.status(400).json({ message: "Items cannot be empty" });
     }
 
+    // Daily sequential: YYYYMMDD-XXXX (e.g. 20260614-0001)
+    const today = new Date();
+    const startOfDay = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+    const todayCount = await Order.count({ where: { createdAt: { [Op.gte]: startOfDay } } });
+    const pad = String(todayCount + 1).padStart(4, "0");
+    const dateStr = today.toISOString().split("T")[0].replace(/-/g, "");
+    const order_number = dateStr + "-" + pad;
+
     const order = await Order.create({
-      order_number: "ORD-" + Date.now(),
+      order_number,
       notes,
       user_id: req.user.id,
       total_amount: 0,

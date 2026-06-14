@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Coffee, Eye, EyeOff, Lock, User } from 'lucide-react';
+import { AlertTriangle, Coffee, Eye, EyeOff, Lock, User } from 'lucide-react';
 import { loginApi } from '@/api/auth';
 import { useAuthStore } from '@/store/authStore';
 
@@ -129,8 +129,9 @@ export default function LoginPage() {
               </div>
 
               {apiError && (
-                <div className="rounded-lg bg-red-50 border border-red-200 p-3 text-sm text-red-700">
-                  {apiError}
+                <div className="rounded-lg bg-red-50 border border-red-200 p-3 text-sm text-red-700 flex items-start gap-2.5">
+                  <AlertTriangle className="h-4 w-4 mt-0.5 shrink-0 text-red-500" />
+                  <span>{apiError}</span>
                 </div>
               )}
 
