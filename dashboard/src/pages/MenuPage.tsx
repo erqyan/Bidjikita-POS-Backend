@@ -178,12 +178,27 @@ function VariantCard({
 
   const [isExpanded, setIsExpanded] = useState(true);
 
+  // Whether user has manually adjusted the target margin
+  const userChangedMargin = useRef(false);
+
   // Profit target % — local state. Once set by the user, it stays fixed.
   const [targetMargin, setTargetMargin] = useState("");
 
-  // When totalCost changes and targetMargin is set, auto-update the price
-  // to maintain the target profit margin.
+  // Pre-fill target margin from existing price vs cost (once, when form data loads)
+  const initialFillDone = useRef(false);
   useEffect(() => {
+    if (!initialFillDone.current && sellingVal > 0 && totalCost > 0) {
+      const actualMargin = ((sellingVal - totalCost) / sellingVal) * 100;
+      if (actualMargin > 0 && actualMargin < 100) {
+        setTargetMargin(actualMargin.toFixed(1));
+      }
+      initialFillDone.current = true;
+    }
+  }, [sellingVal, totalCost]);
+
+  // When totalCost changes and user has set a target margin, auto-update the price
+  useEffect(() => {
+    if (!userChangedMargin.current) return;
     const m = Number(targetMargin);
     if (m >= 0 && m < 100 && totalCost > 0) {
       const autoPrice = Math.ceil(totalCost / (1 - m / 100));
@@ -290,6 +305,7 @@ function VariantCard({
                 onChange={(e) => {
                   const val = e.target.value;
                   setTargetMargin(val);
+                  userChangedMargin.current = true;
                   const m = Number(val);
                   if (m >= 0 && m < 100 && totalCost > 0) {
                     const autoPrice = Math.ceil(totalCost / (1 - m / 100));
@@ -633,7 +649,7 @@ function MenuItemsTab() {
       }
     },
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ["products"] });
+      qc.invalidateQueries({ queryKey: ["products"], refetchType: "all" });
       toast({
         title: "Berhasil",
         description: editing ? "Menu diperbarui" : "Menu ditambahkan",
@@ -653,7 +669,7 @@ function MenuItemsTab() {
   const deleteMutation = useMutation({
     mutationFn: (p: Product) => deleteProduct(p.id),
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ["products"] });
+      qc.invalidateQueries({ queryKey: ["products"], refetchType: "all" });
       toast({ title: "Berhasil", description: "Menu dihapus", variant: "success" });
       setDeleteTarget(null);
     },

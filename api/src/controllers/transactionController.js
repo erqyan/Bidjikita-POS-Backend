@@ -93,9 +93,8 @@ exports.createTransaction =
         });
       }
 
-      // generate invoice
-      const invoice_number =
-        "INV-" + Date.now();
+      // Use order number as invoice number for consistency
+      const invoice_number = order.order_number;
 
       // create transaction
       const transaction =
