@@ -360,7 +360,7 @@ exports.getFinancialReport = async (req, res) => {
       `SELECT COALESCE(SUM(od.quantity * COALESCE((
         SELECT SUM(vi.quantity*rm.cost_per_unit) + COALESCE(MAX(pv_first.overhead_cost),0)
         FROM orderdetailvariants odv
-        JOIN productvariants pv_first ON pv_first.id=odv.variant_id
+        JOIN product_variants pv_first ON pv_first.id=odv.variant_id
         JOIN variantingredients vi ON vi.variant_id=pv_first.id
         JOIN rawmaterials rm ON rm.id=vi.raw_material_id
         WHERE odv.order_detail_id=od.id
@@ -389,21 +389,21 @@ exports.getFinancialReport = async (req, res) => {
         const vIds = Array.isArray(bi.variant_ids) && bi.variant_ids.length > 0 ? bi.variant_ids : null;
         if (vIds) {
           const [ic] = await sequelize.query(
-            `SELECT SUM(vi.quantity*rm.cost_per_unit)+COALESCE((SELECT overhead_cost FROM productvariants WHERE id=:vid LIMIT 1),0) AS c
+            `SELECT SUM(vi.quantity*rm.cost_per_unit)+COALESCE((SELECT overhead_cost FROM product_variants WHERE id=:vid LIMIT 1),0) AS c
              FROM variantingredients vi JOIN rawmaterials rm ON rm.id=vi.raw_material_id WHERE vi.variant_id IN (:vids)`,
             { replacements: { vid: vIds[0], vids: vIds }, type: QueryTypes.SELECT }
           );
           bundleCost += (parseFloat(ic?.c)||0) * (bi.quantity||1);
         } else {
           const [def] = await sequelize.query(
-            `SELECT id FROM productvariants WHERE product_id=:pid ORDER BY id ASC LIMIT 1`,
+            `SELECT id FROM product_variants WHERE product_id=:pid ORDER BY id ASC LIMIT 1`,
             { replacements: { pid: bi.product_id }, type: QueryTypes.SELECT }
           );
           if (def) {
             const [dc] = await sequelize.query(
               `SELECT SUM(vi.quantity*rm.cost_per_unit) + COALESCE(MIN(pv.overhead_cost),0) AS c
                FROM variantingredients vi JOIN rawmaterials rm ON rm.id=vi.raw_material_id
-               JOIN productvariants pv ON pv.id=vi.variant_id WHERE vi.variant_id=:vid`,
+               JOIN product_variants pv ON pv.id=vi.variant_id WHERE vi.variant_id=:vid`,
               { replacements: { vid: def.id }, type: QueryTypes.SELECT }
             );
             bundleCost += (parseFloat(dc?.c)||0) * (bi.quantity||1);
