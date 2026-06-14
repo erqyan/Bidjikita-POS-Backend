@@ -461,5 +461,8 @@ exports.getFinancialReport = async (req, res) => {
       cashiers: Object.entries(cashierMap).map(([name,d])=>({ name, txCount: d.count, revenue: d.revenue })),
       transactions: txRows.map(tx=>({ id: tx.id, invoice: tx.invoice_number, date: tx.transaction_date, amount: parseFloat(tx.total_amount), method: tx.payment_method, cashier: tx.cashier||'-' })),
     });
-  } catch (error) { res.status(500).json({ message: error.message }); }
+    } catch (error) {
+    console.error("[FinancialReport]", error);
+    res.status(500).json({ message: error.message });
+  }
 };
