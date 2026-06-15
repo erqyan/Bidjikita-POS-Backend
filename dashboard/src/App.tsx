@@ -1,15 +1,17 @@
+import { lazy, Suspense } from 'react';
 import { Routes, Route, Navigate, Outlet } from 'react-router-dom';
 import { useAuthStore } from '@/store/authStore';
 import { AppLayout } from '@/components/layout/AppLayout';
-import LoginPage from '@/pages/LoginPage';
-import DashboardPage from '@/pages/DashboardPage';
-import MenuPage from '@/pages/MenuPage';
-import IngredientsPage from '@/pages/IngredientsPage';
-import BundlesPage from '@/pages/BundlesPage';
-import OrdersPage from '@/pages/OrdersPage';
-import AnalyticsPage from '@/pages/AnalyticsPage';
+import { PageLoader } from '@/components/ui/Spinner';
 
-import UsersPage from '@/pages/UsersPage';
+const LoginPage = lazy(() => import('@/pages/LoginPage'));
+const DashboardPage = lazy(() => import('@/pages/DashboardPage'));
+const MenuPage = lazy(() => import('@/pages/MenuPage'));
+const IngredientsPage = lazy(() => import('@/pages/IngredientsPage'));
+const BundlesPage = lazy(() => import('@/pages/BundlesPage'));
+const OrdersPage = lazy(() => import('@/pages/OrdersPage'));
+const AnalyticsPage = lazy(() => import('@/pages/AnalyticsPage'));
+const UsersPage = lazy(() => import('@/pages/UsersPage'));
 
 function ProtectedRoute() {
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
@@ -21,7 +23,8 @@ function ProtectedRoute() {
 
 export default function App() {
   return (
-    <Routes>
+    <Suspense fallback={<PageLoader />}>
+      <Routes>
       <Route path="/login" element={<LoginPage />} />
 
       <Route element={<ProtectedRoute />}>
@@ -41,5 +44,6 @@ export default function App() {
 
       <Route path="*" element={<Navigate to="/dashboard" replace />} />
     </Routes>
+    </Suspense>
   );
 }

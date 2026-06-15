@@ -170,9 +170,10 @@ function BundleImageCollage({ items }: { items: BundleItem[] }) {
       <div className="h-44 rounded-t-xl overflow-hidden">
         <img
           src={getMediaUrl(images[0])}
-          alt=""
-          className="w-full h-full object-cover"
-          onError={(e) => ((e.target as HTMLImageElement).style.display = "none")}
+                    alt=""
+                    loading="lazy"
+                    className="w-full h-full object-cover"
+                    onError={(e) => ((e.target as HTMLImageElement).style.display = "none")}
         />
       </div>
     );
@@ -184,9 +185,10 @@ function BundleImageCollage({ items }: { items: BundleItem[] }) {
         <img
           key={i}
           src={getMediaUrl(url)}
-          alt=""
-          className="w-full h-full object-cover"
-          onError={(e) => ((e.target as HTMLImageElement).style.display = "none")}
+                    alt=""
+                    loading="lazy"
+                    className="w-full h-full object-cover"
+                    onError={(e) => ((e.target as HTMLImageElement).style.display = "none")}
         />
       ))}
     </div>
@@ -324,7 +326,7 @@ export default function BundlesPage() {
             return (
               <Card key={b.id} className={!b.is_active ? 'opacity-60' : ''}>
                               {b.image_url ? (
-                                <img src={getMediaUrl(b.image_url)} alt="" className="h-44 w-full object-cover rounded-t-xl" />
+                                <img src={getMediaUrl(b.image_url)} alt="" loading="lazy" className="h-44 w-full object-cover rounded-t-xl" />
                               ) : (
                                 <BundleImageCollage items={b.BundleItems || []} />
                               )}
