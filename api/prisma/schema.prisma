@@ -15,6 +15,11 @@ model Role {
   id        Int    @id @default(autoincrement())
   role_name String @db.VarChar(255)
   users     User[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("roles")
 }
 
 // ── Users ────────────────────────────────────────────────────────────────────

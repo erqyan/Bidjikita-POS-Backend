@@ -2,8 +2,8 @@
 
 Point of Sale system for Bidjikita Coffee Roastery. Three components:
 
-- **Backend API** — Node.js, Express, Sequelize, MySQL
-- **Admin Dashboard** — React, Vite, TypeScript, TailwindCSS
+- **Backend API** — Node.js, Express, TypeScript, Prisma, MySQL
+- **Admin Dashboard** — React, Vite, TypeScript, TailwindCSS v4
 - **Cashier App** — Flutter (separate project)
 
 ---
@@ -12,22 +12,26 @@ Point of Sale system for Bidjikita Coffee Roastery. Three components:
 
 ```
 Bidjikita-POS-Backend/
-├── api/                          # Backend REST API
+├── api/                          # Backend REST API (TypeScript + Prisma)
+│   ├── prisma/
+│   │   └── schema.prisma         # Database schema
 │   ├── src/
-│   │   ├── config/database.js
+│   │   ├── index.ts              # Server entry point (auto-seeds roles/admin)
+│   │   ├── app.ts                # Express app setup
+│   │   ├── lib/prisma.ts         # Prisma client singleton
+│   │   ├── types/index.ts        # Re-exported Prisma types
 │   │   ├── controllers/          # Request handlers
 │   │   ├── middleware/            # Auth, admin, upload
-│   │   ├── models/               # Sequelize models
 │   │   ├── routes/               # Express routes
 │   │   └── services/             # Stock deduction
-│   ├── server.js
+│   ├── tsconfig.json
 │   └── .env
 │
-├── dashboard/                    # Admin web dashboard
+├── dashboard/                    # Admin web dashboard (React + TypeScript)
 │   └── src/
 │       ├── api/                  # API client functions
 │       ├── components/ui/        # Reusable UI components
-│       ├── lib/                  # Utils, API client config
+│       ├── lib/                  # Utils, API client config, vendored xlsx
 │       ├── pages/                # Page components
 │       ├── store/                # Zustand stores
 │       └── types/                # TypeScript interfaces
@@ -61,6 +65,8 @@ Bidjikita-POS-Backend/
 - Financial report endpoint aggregating revenue, cost, and profit across date ranges
 - Analytics endpoints for dashboard charts and summaries
 - Product update preserves variant IDs to prevent bundle references from breaking
+- **Full TypeScript** — Compile-time safety across all API code
+- **Prisma ORM** — Auto-generated types, type-safe queries, no raw SQL injection risk
 
 ### Cashier App (Flutter)
 
@@ -87,14 +93,8 @@ Bidjikita-POS-Backend/
 git clone <repo-url>
 cd Bidjikita-POS-Backend
 
-# Install root dependencies
+# Install all workspace dependencies
 npm install
-
-# Install API dependencies
-cd api && npm install
-
-# Install dashboard dependencies
-cd ../dashboard && npm install
 ```
 
 ### 2. Environment configuration
@@ -103,11 +103,13 @@ Create `api/.env`:
 
 ```env
 PORT=5000
-DB_HOST=localhost
-DB_USER=root
-DB_PASSWORD=
-DB_NAME=bidjikita_pos
+DATABASE_URL="mysql://root:@localhost:3306/bidjikita_pos"
 JWT_SECRET=your_secret_key
+
+# Optional: auto-create admin user on first run
+DEFAULT_ADMIN_NAME=Admin
+DEFAULT_ADMIN_USERNAME=admin
+DEFAULT_ADMIN_PASSWORD=admin123
 ```
 
 Create `dashboard/.env`:
@@ -122,17 +124,43 @@ VITE_API_URL=http://localhost:5000/api
 CREATE DATABASE bidjikita_pos;
 ```
 
-The backend uses `sequelize.sync()` to create tables on startup.
+The backend uses **Prisma** with an existing MySQL database. Apply the schema:
+
+```bash
+cd api
+npx prisma db push
+```
+
+> **Note:** If migrating from the old Sequelize setup, the table names in `prisma/schema.prisma` use `@@map()` to match existing tables — no data migration needed.
 
 ### 4. Run
 
 ```bash
-# API server
+# API server (from the api directory)
 cd api && npm run dev
 
 # Dashboard (separate terminal)
 cd dashboard && npm run dev
 ```
+
+Or from the project root:
+
+```bash
+npm run dev:api
+npm run dev:dashboard
+```
+
+### 5. Production
+
+```bash
+# Build the API (generates Prisma client + compiles TypeScript)
+cd api && npm run build
+
+# Start the compiled server
+cd api && npm start
+```
+
+The `npm start` command auto-runs `prisma generate` and `tsc` before starting — no separate build step needed on deploy.
 
 ---
 
@@ -291,6 +319,8 @@ FormData with fields: `bundle_name`, `description`, `bundle_price`, `items` (JSO
 - **Product edits preserve variant IDs** — Variants are matched by name on update, avoiding orphaned references in bundles.
 - **Bundle orders store expanded contents** — The bundle line item in an order stores the constituent products as JSON for stock tracking and display.
 - **Ingredient audit log** — Every stock change (manual adjustment or order deduction) is recorded with before/after values, user, and timestamps.
+- **Single schema file** — All 14 models defined in one `prisma/schema.prisma` with `@@map()` for backward compatibility with existing MySQL tables.
+- **Self-contained start** — `npm start` auto-runs `prisma generate` and `tsc`, no manual build step needed on deploy.
 
 ---
 
