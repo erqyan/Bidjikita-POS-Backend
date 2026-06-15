@@ -4,17 +4,18 @@
   "description": "Bidjikita POS REST API (Express + Prisma)",
   "main": "dist/index.js",
   "scripts": {
-    "build": "prisma generate && tsc",
+    "build": "prisma generate --no-hints && tsc",
     "start": "prisma generate --no-hints && tsc && node dist/index.js",
     "dev": "prisma generate && tsx watch src/index.ts",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "postinstall": "prisma generate"
+    "postinstall": "prisma generate --no-hints"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "type": "commonjs",
   "dependencies": {
+    "@prisma/adapter-mariadb": "^7.8.0",
     "@prisma/client": "^7.0.0",
     "bcryptjs": "^3.0.3",
     "cors": "^2.8.6",
@@ -22,6 +23,7 @@
     "express": "^5.2.1",
     "helmet": "^8.2.0",
     "jsonwebtoken": "^9.0.3",
+    "mariadb": "^3.4.5",
     "morgan": "^1.10.1",
     "multer": "^2.1.1"
   },
