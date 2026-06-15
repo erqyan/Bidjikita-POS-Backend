@@ -15,11 +15,11 @@
     "noUnusedLocals": false,
     "noUnusedParameters": false,
     "noFallthroughCasesInSwitch": true,
+    "ignoreDeprecations": "6.0",
     "baseUrl": ".",
     "paths": {
       "@/*": ["./src/*"],
     },
-    "typeRoots": ["./node_modules/@types"],
     "types": ["vite/client"],
   },
   "include": ["src"],

@@ -14,15 +14,16 @@ import {
 import { useAuthStore } from '@/store/authStore';
 import { cn } from '@/lib/utils';
 
-const navItems = [
+type NavItem = { to: string; label: string; icon: React.ComponentType<{ className?: string }>; adminOnly?: boolean };
+
+const navItems: NavItem[] = [
   { to: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { to: '/menu', label: 'Menu', icon: UtensilsCrossed },
-  { to: '/ingredients', label: 'Bahan Baku', icon: FlaskConical },
-  { to: '/bundles', label: 'Bundling', icon: Package },
+  { to: '/ingredients', label: 'Bahan Baku', icon: FlaskConical, adminOnly: true },
+  { to: '/bundles', label: 'Bundling', icon: Package, adminOnly: true },
   { to: '/orders', label: 'Transaksi', icon: ShoppingCart },
-  { to: '/analytics', label: 'Analitik', icon: BarChart3 },
-
-  { to: '/users', label: 'Pengguna', icon: Users },
+  { to: '/analytics', label: 'Analitik', icon: BarChart3, adminOnly: true },
+  { to: '/users', label: 'Pengguna', icon: Users, adminOnly: true },
 ];
 
 export function Sidebar() {
@@ -56,11 +57,13 @@ export function Sidebar() {
       {/* Navigation */}
       <nav className="flex-1 px-3 py-4 overflow-y-auto">
         <div className="space-y-0.5">
-          {navItems.map(({ to, label, icon: Icon }) => (
+          {navItems
+            .filter((item) => !item.adminOnly || user?.Role?.role_name === 'admin')
+            .map(({ to, label, icon: Icon }) => (
             <NavLink
               key={to}
               to={to}
-              className={({ isActive }) =>
+              className={({ isActive }: { isActive: boolean }) =>
                 cn(
                   'flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all',
                   isActive

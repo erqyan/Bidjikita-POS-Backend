@@ -6,6 +6,10 @@
     "api",
     "dashboard"
   ],
+  "overrides": {
+    "react": "^19.2.7",
+    "react-dom": "^19.2.7"
+  },
   "scripts": {
     "dev:api": "npm run dev   --workspace=api",
     "dev:dashboard": "npm run dev   --workspace=dashboard",

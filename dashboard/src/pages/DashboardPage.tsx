@@ -123,7 +123,7 @@ export default function DashboardPage() {
                   tickFormatter={(v) => `${(v / 1000).toFixed(0)}K`}
                 />
                 <Tooltip
-                  formatter={(value: number) => [formatCurrency(value), 'Pendapatan']}
+                  formatter={(value: any) => [formatCurrency(value), 'Pendapatan']}
                   labelFormatter={(label) => new Date(label).toLocaleDateString('id-ID', { weekday: 'long', month: 'long', day: 'numeric' })}
                   contentStyle={{ borderRadius: '12px', border: '1px solid #e2e8f0', fontSize: 13 }}
                 />
@@ -156,7 +156,7 @@ export default function DashboardPage() {
                   <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
                   <XAxis dataKey="product_name" type="category" tick={{ fontSize: 10, fill: '#64748b' }} angle={-20} textAnchor="end" height={60} label={{ value: 'Produk', position: 'bottom', offset: -10, style: { fontSize: 11, fill: '#94a3b8' } }} />
                   <YAxis type="number" tick={{ fontSize: 11, fill: '#94a3b8' }} label={{ value: 'Terjual (porsi)', angle: -90, position: 'insideLeft', style: { fontSize: 11, fill: '#94a3b8' } }} />
-                  <Tooltip formatter={(value: number) => [`${value} porsi`, 'Terjual']} contentStyle={{ borderRadius: '12px', border: '1px solid #e2e8f0', fontSize: 13 }} />
+                  <Tooltip formatter={(value: any) => [`${value} porsi`, 'Terjual']} contentStyle={{ borderRadius: '12px', border: '1px solid #e2e8f0', fontSize: 13 }} />
                   <Bar dataKey="total_quantity" radius={[6, 6, 0, 0]}>
                     {topProducts.map((_, i) => (
                       <Cell key={i} fill={COLORS[i % COLORS.length]} />

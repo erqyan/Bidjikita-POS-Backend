@@ -78,9 +78,9 @@ const ingredientSchema = z.object({
 });
 
 const variantSchema = z.object({
-  variant_name: z.string().optional().default(""),
+  variant_name: z.string().optional(),
   price: z.coerce.number().min(1, "Harga jual wajib diisi"),
-  overhead_cost: z.coerce.number().min(0).default(0),
+  overhead_cost: z.coerce.number().min(0).optional(),
   ingredients: z
     .array(ingredientSchema)
     .min(1, "Tambahkan minimal satu bahan"),
@@ -91,12 +91,12 @@ const menuSchema = z.object({
   category_id: z.coerce.number().min(1, "Pilih kategori"),
   description: z.string().optional(),
   image_url: z.string().optional(),
-  status: z.enum(["available", "out_of_stock"]).default("available"),
+  status: z.enum(["available", "out_of_stock"]),
   variants: z.array(variantSchema).min(1, "Minimal satu varian diperlukan"),
 });
 
-type MenuForm = z.infer<typeof menuSchema>;
-type VariantForm = z.infer<typeof variantSchema>;
+type MenuForm = z.output<typeof menuSchema>;
+type VariantForm = z.output<typeof variantSchema>;
 
 // ──────────────────────────────────────────────────────────────────────────────
 // Toggle Switch Component (inline, no external dependency)
@@ -125,7 +125,7 @@ function ToggleSwitch({
       >
         <span
           className={`inline-block h-5 w-5 transform rounded-full bg-white shadow transition-transform ${
-            checked ? "translate-x-[22px]" : "translate-x-[2px]"
+            checked ? "translate-x-5.5" : "translate-x-0.5"
           }`}
         />
       </button>
@@ -532,7 +532,7 @@ function MenuItemsTab() {
 
   // ── Form ────────────────────────────────────────────────────────────────────
   const methods = useForm<MenuForm>({
-    resolver: zodResolver(menuSchema),
+    resolver: zodResolver(menuSchema) as any,
     defaultValues: {
       status: "available",
       variants: [{ variant_name: "", price: 0, overhead_cost: 0, ingredients: [{ ingredient_id: 0, qty: 0 }] }],
@@ -917,7 +917,7 @@ function MenuItemsTab() {
       {/* ── Create / Edit Dialog ────────────────────────────────────────────── */}
       <Dialog
         open={open}
-        onOpenChange={(v) => {
+        onOpenChange={(v: boolean) => {
           if (!v && imagePreview.startsWith("blob:")) URL.revokeObjectURL(imagePreview);
           setOpen(v);
         }}
@@ -1107,7 +1107,7 @@ function MenuItemsTab() {
 
       <ConfirmDialog
         open={!!deleteTarget}
-        onOpenChange={(v) => !v && setDeleteTarget(null)}
+        onOpenChange={(v: boolean) => !v && setDeleteTarget(null)}
         title="Hapus Menu"
         description={`Hapus menu "${deleteTarget?.product_name}" beserta semua varian dan resepnya?`}
         warning={deleteTargetBundleWarning}
@@ -1141,7 +1141,7 @@ function CategoriesTab() {
   });
 
   const { register, handleSubmit, reset, formState: { errors, isSubmitting } } = useForm<CatForm>({
-    resolver: zodResolver(catSchema),
+    resolver: zodResolver(catSchema) as any,
   });
 
   const saveMutation = useMutation({
@@ -1270,7 +1270,7 @@ function CategoriesTab() {
       </Dialog>
       <ConfirmDialog
         open={!!deleteTarget}
-        onOpenChange={(v) => !v && setDeleteTarget(null)}
+        onOpenChange={(v: boolean) => !v && setDeleteTarget(null)}
         title="Hapus Kategori"
         description={`Hapus kategori "${deleteTarget?.category_name}"?`}
         onConfirm={() => deleteTarget && deleteMutation.mutate(deleteTarget.id)}

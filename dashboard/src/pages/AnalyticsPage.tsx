@@ -104,9 +104,9 @@ export default function AnalyticsPage() {
                   </linearGradient>
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
-                <XAxis dataKey="date" tick={{ fontSize: 11, fill: '#94a3b8' }} tickFormatter={(v) => new Date(v).toLocaleDateString('id-ID', { month: 'short', day: 'numeric' })} />
-                <YAxis tick={{ fontSize: 11, fill: '#94a3b8' }} tickFormatter={(v) => `${(v / 1000).toFixed(0)}K`} />
-                <Tooltip formatter={(value: number) => [formatCurrency(value), 'Pendapatan']} labelFormatter={(l) => new Date(l).toLocaleDateString('id-ID', { weekday: 'long', month: 'long', day: 'numeric' })} contentStyle={{ borderRadius: '12px', border: '1px solid #e2e8f0', fontSize: 12 }} />
+                <XAxis dataKey="date" tick={{ fontSize: 11, fill: '#94a3b8' }} tickFormatter={(v: any) => new Date(v).toLocaleDateString('id-ID', { month: 'short', day: 'numeric' })} />
+                <YAxis tick={{ fontSize: 11, fill: '#94a3b8' }} tickFormatter={(v: any) => `${(v / 1000).toFixed(0)}K`} />
+                <Tooltip formatter={(value: any) => [formatCurrency(value), 'Pendapatan']} labelFormatter={(l: string) => new Date(l).toLocaleDateString('id-ID', { weekday: 'long', month: 'long', day: 'numeric' })} contentStyle={{ borderRadius: '12px', border: '1px solid #e2e8f0', fontSize: 12 }} />
                 <Area type="monotone" dataKey="revenue" stroke="#d97706" strokeWidth={2} fill="url(#areaGrad)" />
               </AreaChart>
             </ResponsiveContainer>
@@ -151,14 +151,14 @@ export default function AnalyticsPage() {
                     </linearGradient>
                   </defs>
                   <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
-                  <XAxis dataKey="date" tick={{ fontSize: 10, fill: '#94a3b8' }} tickFormatter={(v) => new Date(v).toLocaleDateString('id-ID', { month: 'short', day: 'numeric' })} />
-                  <YAxis tick={{ fontSize: 11, fill: '#94a3b8' }} tickFormatter={(v) => `${(v / 1000).toFixed(0)}K`} />
+                  <XAxis dataKey="date" tick={{ fontSize: 10, fill: '#94a3b8' }} tickFormatter={(v: any) => new Date(v).toLocaleDateString('id-ID', { month: 'short', day: 'numeric' })} />
+                  <YAxis tick={{ fontSize: 11, fill: '#94a3b8' }} tickFormatter={(v: any) => `${(v / 1000).toFixed(0)}K`} />
                   <Tooltip
-                    formatter={(value: number, name: string) => {
+                    formatter={(value: any, name: any) => {
                       const labels: Record<string, string> = { revenue: 'Pendapatan', cost: 'Biaya', profit: 'Keuntungan' };
                       return [formatCurrency(value), labels[name] || name];
                     }}
-                    labelFormatter={(l) => new Date(l).toLocaleDateString('id-ID', { weekday: 'long', month: 'long', day: 'numeric' })}
+                    labelFormatter={(l: string) => new Date(l).toLocaleDateString('id-ID', { weekday: 'long', month: 'long', day: 'numeric' })}
                     contentStyle={{ borderRadius: '12px', border: '1px solid #e2e8f0', fontSize: 12 }}
                   />
                   <Legend formatter={(value: string) => {
@@ -191,7 +191,7 @@ export default function AnalyticsPage() {
                         <Cell key={entry.key} fill={PIE_COLORS[entry.key] || '#94a3b8'} />
                       ))}
                     </Pie>
-                    <Tooltip formatter={(value: number) => formatCurrency(value)} contentStyle={{ borderRadius: '12px', fontSize: 12 }} />
+                    <Tooltip formatter={(value: any) => formatCurrency(value)} contentStyle={{ borderRadius: '12px', fontSize: 12 }} />
                   </PieChart>
                 </ResponsiveContainer>
                 <div className="flex-1 space-y-2">
@@ -224,7 +224,7 @@ export default function AnalyticsPage() {
                   <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
                   <XAxis dataKey="product_name" type="category" tick={{ fontSize: 10, fill: '#64748b' }} angle={-20} textAnchor="end" height={60} label={{ value: 'Produk', position: 'bottom', offset: -10, style: { fontSize: 11, fill: '#94a3b8' } }} />
                   <YAxis type="number" tick={{ fontSize: 11, fill: '#94a3b8' }} label={{ value: 'Terjual (porsi)', angle: -90, position: 'insideLeft', style: { fontSize: 11, fill: '#94a3b8' } }} />
-                  <Tooltip formatter={(v: number) => [`${v} porsi`, 'Terjual']} contentStyle={{ borderRadius: '12px', fontSize: 12 }} />
+                  <Tooltip formatter={(v: any) => [`${v} porsi`, 'Terjual']} contentStyle={{ borderRadius: '12px', fontSize: 12 }} />
                   <Bar dataKey="total_quantity" fill="#d97706" radius={[6, 6, 0, 0]}>
                     <LabelList dataKey="total_quantity" position="top" style={{ fontSize: 11, fontWeight: 600, fill: '#334155' }} />
                   </Bar>

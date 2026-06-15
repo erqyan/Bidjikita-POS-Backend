@@ -48,14 +48,22 @@ function resolveVariant(product: Product, variantId: number | undefined): Produc
 // ── Schema ───────────────────────────────────────────────────────────────────
 
 const schema = z.object({
-  bundle_name: z.string().min(1, 'Nama bundle wajib diisi'),
+  bundle_name: z.string().trim().min(1, 'Nama bundle wajib diisi'),
   description: z.string().optional(),
   bundle_price: z.coerce.number().min(1, 'Harga bundle wajib diisi'),
   items: z.array(z.object({
     product_id: z.coerce.number().min(1, 'Pilih produk'),
     variant_id: z.coerce.number().optional(),
     quantity: z.coerce.number().min(1, 'Minimal 1'),
-  })).min(1, 'Tambahkan minimal satu produk'),
+  })).min(1, 'Tambahkan minimal satu produk').refine((items) => {
+    const seen = new Set();
+    for (const item of items) {
+      const key = `${item.product_id}-${item.variant_id || 'default'}`;
+      if (seen.has(key)) return false;
+      seen.add(key);
+    }
+    return true;
+  }, 'Terdapat produk/varian yang duplikat dalam bundle. Hapus duplikat sebelum menyimpan.'),
 });
 type FormData = z.infer<typeof schema>;
 
@@ -150,7 +158,7 @@ function BundleImageCollage({ items }: { items: BundleItem[] }) {
 
   if (images.length === 0) {
     return (
-      <div className="h-44 bg-gradient-to-br from-amber-100 to-amber-200 flex items-center justify-center rounded-t-xl">
+      <div className="h-44 bg-linear-to-br from-amber-100 to-amber-200 flex items-center justify-center rounded-t-xl">
         <Package className="h-8 w-8 text-amber-400" />
       </div>
     );
@@ -201,7 +209,7 @@ export default function BundlesPage() {
   const { data: products = [] } = useQuery({ queryKey: ['products'], queryFn: () => getProducts().then((r) => r.data) });
 
   const { register, handleSubmit, reset, control, watch, setValue, formState: { errors, isSubmitting } } = useForm<FormData>({
-    resolver: zodResolver(schema),
+    resolver: zodResolver(schema) as any,
     defaultValues: { items: [{ product_id: 0, quantity: 1 }] },
   });
 
@@ -393,7 +401,7 @@ export default function BundlesPage() {
       )}
 
       {/* ── Create / Edit Dialog ────────────────────────────────────────────── */}
-      <Dialog open={open} onOpenChange={(v) => { if (!v && imagePreview.startsWith("blob:")) URL.revokeObjectURL(imagePreview); setOpen(v); }}>
+      <Dialog open={open} onOpenChange={(v: boolean) => { if (!v && imagePreview.startsWith("blob:")) URL.revokeObjectURL(imagePreview); setOpen(v); }}>
         <DialogContent className="max-w-xl max-h-[90vh] overflow-y-auto">
           <DialogHeader><DialogTitle>{editing ? 'Edit Bundle' : 'Tambah Bundle'}</DialogTitle></DialogHeader>
           <form onSubmit={handleSubmit((d) => saveMutation.mutate(d))} className="space-y-4">
@@ -464,7 +472,7 @@ export default function BundlesPage() {
                     <div className="flex-1">
                       <Controller name={`items.${idx}.product_id`} control={control} render={({ field: f }) => (
                         <Select
-                          options={products.map((p) => ({ value: String(p.id), label: p.product_name }))}
+                          options={products.filter((p) => p.status === 'available').map((p) => ({ value: String(p.id), label: p.product_name }))}
                           value={f.value ? String(f.value) : undefined}
                           onValueChange={(v) => {
                             const productId = Number(v);
@@ -528,7 +536,7 @@ export default function BundlesPage() {
         </DialogContent>
       </Dialog>
 
-      <ConfirmDialog open={!!deleteTarget} onOpenChange={(v) => !v && setDeleteTarget(null)} title="Hapus Bundle" description={`Hapus bundle "${deleteTarget?.bundle_name}"?`} onConfirm={() => deleteTarget && deleteMutation.mutate(deleteTarget.id)} loading={deleteMutation.isPending} confirmLabel="Hapus" />
+      <ConfirmDialog open={!!deleteTarget} onOpenChange={(v: boolean) => !v && setDeleteTarget(null)} title="Hapus Bundle" description={`Hapus bundle "${deleteTarget?.bundle_name}"?`} onConfirm={() => deleteTarget && deleteMutation.mutate(deleteTarget.id)} loading={deleteMutation.isPending} confirmLabel="Hapus" />
     </div>
   );
 }

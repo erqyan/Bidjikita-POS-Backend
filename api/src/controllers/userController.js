@@ -48,6 +48,12 @@ exports.createUser = async (req, res) => {
       return res.status(400).json({ message: "Username already exists" });
     }
 
+    // Validate and sanitize phone_number
+    const sanitizedPhone = phone_number ? phone_number.trim() : null;
+    if (sanitizedPhone && !/^\d+$/.test(sanitizedPhone)) {
+      return res.status(400).json({ message: "No. telepon hanya boleh mengandung angka" });
+    }
+
     // Resolve role: use provided role_id or fall back to cashier
     let resolvedRoleId = role_id;
     if (!resolvedRoleId) {
@@ -68,7 +74,7 @@ exports.createUser = async (req, res) => {
       full_name,
       username,
       password_hash,
-      phone_number,
+      phone_number: sanitizedPhone,
       role_id: resolvedRoleId,
     });
 
@@ -87,12 +93,18 @@ exports.updateUser = async (req, res) => {
   try {
     const { full_name, phone_number } = req.body;
 
+    // Validate and sanitize phone_number
+    const sanitizedPhone = phone_number !== undefined ? (phone_number ? phone_number.trim() : null) : undefined;
+    if (sanitizedPhone && !/^\d+$/.test(sanitizedPhone)) {
+      return res.status(400).json({ message: "No. telepon hanya boleh mengandung angka" });
+    }
+
     const user = await User.findByPk(req.params.id);
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
 
-    await user.update({ full_name, phone_number });
+    await user.update({ full_name, phone_number: sanitizedPhone !== undefined ? sanitizedPhone : user.phone_number });
 
     const updated = await User.findByPk(user.id, {
       include: [{ model: Role, attributes: ["id", "role_name"] }],

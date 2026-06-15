@@ -147,7 +147,7 @@ export default function IngredientsPage() {
     reset,
     formState: { errors, isSubmitting },
   } = useForm<FormData>({
-    resolver: zodResolver(schema),
+    resolver: zodResolver(schema) as any,
     defaultValues: { cost_per_unit: 0, stock: 0, minimum_stock: 0 },
   });
 
@@ -455,7 +455,7 @@ export default function IngredientsPage() {
       </Dialog>
 
       {/* Stock History Dialog */}
-      <Dialog open={!!logTarget} onOpenChange={(v) => !v && setLogTarget(null)}>
+      <Dialog open={!!logTarget} onOpenChange={(v: boolean) => !v && setLogTarget(null)}>
         <DialogContent className="max-w-lg max-h-[70vh]">
           <DialogHeader>
             <DialogTitle>Riwayat Stok: {logTarget?.material_name}</DialogTitle>
@@ -510,7 +510,7 @@ export default function IngredientsPage() {
 
       <ConfirmDialog
         open={!!deleteTarget}
-        onOpenChange={(v) => !v && setDeleteTarget(null)}
+        onOpenChange={(v: boolean) => !v && setDeleteTarget(null)}
         title="Hapus Bahan Baku"
         description={`Yakin ingin menghapus "${deleteTarget?.material_name}"? Bahan yang digunakan dalam resep tidak dapat dihapus.`}
         onConfirm={() => deleteTarget && deleteMutation.mutate(deleteTarget.id)}

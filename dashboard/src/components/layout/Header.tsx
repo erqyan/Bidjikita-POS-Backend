@@ -58,7 +58,7 @@ export function Header() {
 
           <DropdownMenu.Portal>
             <DropdownMenu.Content
-              className="z-50 min-w-[180px] overflow-hidden rounded-xl border border-gray-200 bg-white shadow-lg p-1"
+              className="z-50 min-w-45 overflow-hidden rounded-xl border border-gray-200 bg-white shadow-lg p-1"
               sideOffset={8}
               align="end"
             >

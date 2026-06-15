@@ -16,7 +16,6 @@ import {
 import { EmptyState } from '@/components/ui/EmptyState';
 import { PageLoader } from '@/components/ui/Spinner';
 import { formatCurrency, formatDateTime } from '@/lib/utils';
-import * as XLSX from 'xlsx';
 
 const paymentMethodLabel: Record<string, string> = {
   cash: 'Tunai', qris: 'QRIS', debit: 'Debit', credit: 'Kredit',
@@ -157,8 +156,9 @@ export default function OrdersPage() {
     w.document.close();
   };
 
-  const exportExcel = () => {
+  const exportExcel = async () => {
     if (!report) return;
+    const { default: XLSX } = await import('@/lib/xlsx');
     const wb = XLSX.utils.book_new();
     const toSheet = (data: any[]) => XLSX.utils.json_to_sheet(data);
     const summaryData = [
@@ -289,7 +289,7 @@ export default function OrdersPage() {
       )}
 
       {/* Detail dialog */}
-      <Dialog open={!!viewTx} onOpenChange={(v) => !v && setViewTx(null)}>
+      <Dialog open={!!viewTx} onOpenChange={(v: boolean) => !v && setViewTx(null)}>
         <DialogContent className="max-w-xl">
           <DialogHeader>
             <DialogTitle>Detail Transaksi</DialogTitle>
@@ -418,11 +418,11 @@ export default function OrdersPage() {
                 </div>
 
                 <div className="flex flex-wrap gap-3">
-                  <div className="flex-1 min-w-[140px] rounded-xl bg-green-50 p-3 text-center"><p className="text-[11px] text-green-600 font-medium">Pendapatan</p><p className="text-sm font-bold text-green-700 break-words">{formatCurrency(report.summary.revenue)}</p></div>
-                  <div className="flex-1 min-w-[140px] rounded-xl bg-red-50 p-3 text-center"><p className="text-[11px] text-red-600 font-medium">Biaya Produksi</p><p className="text-sm font-bold text-red-700 break-words">{formatCurrency(report.summary.cost)}</p></div>
-                  <div className="flex-1 min-w-[140px] rounded-xl bg-amber-50 p-3 text-center"><p className="text-[11px] text-amber-600 font-medium">Keuntungan Bersih</p><p className="text-sm font-bold text-amber-700 break-words">{formatCurrency(report.summary.profit)} ({report.summary.profitPct}%)</p></div>
-                  <div className="flex-1 min-w-[140px] rounded-xl bg-blue-50 p-3 text-center"><p className="text-[11px] text-blue-600 font-medium">Total Transaksi</p><p className="text-sm font-bold text-blue-700 break-words">{report.summary.txCount}</p></div>
-                  <div className="flex-1 min-w-[140px] rounded-xl bg-purple-50 p-3 text-center"><p className="text-[11px] text-purple-600 font-medium">Rata-rata</p><p className="text-sm font-bold text-purple-700 break-words">{formatCurrency(report.summary.avgTx)}</p></div>
+                  <div className="flex-1 min-w-35 rounded-xl bg-green-50 p-3 text-center"><p className="text-[11px] text-green-600 font-medium">Pendapatan</p><p className="text-sm font-bold text-green-700 wrap-break-word">{formatCurrency(report.summary.revenue)}</p></div>
+                  <div className="flex-1 min-w-35 rounded-xl bg-red-50 p-3 text-center"><p className="text-[11px] text-red-600 font-medium">Biaya Produksi</p><p className="text-sm font-bold text-red-700 wrap-break-word">{formatCurrency(report.summary.cost)}</p></div>
+                  <div className="flex-1 min-w-35 rounded-xl bg-amber-50 p-3 text-center"><p className="text-[11px] text-amber-600 font-medium">Keuntungan Bersih</p><p className="text-sm font-bold text-amber-700 wrap-break-word">{formatCurrency(report.summary.profit)} ({report.summary.profitPct}%)</p></div>
+                  <div className="flex-1 min-w-35 rounded-xl bg-blue-50 p-3 text-center"><p className="text-[11px] text-blue-600 font-medium">Total Transaksi</p><p className="text-sm font-bold text-blue-700 wrap-break-word">{report.summary.txCount}</p></div>
+                  <div className="flex-1 min-w-35 rounded-xl bg-purple-50 p-3 text-center"><p className="text-[11px] text-purple-600 font-medium">Rata-rata</p><p className="text-sm font-bold text-purple-700 wrap-break-word">{formatCurrency(report.summary.avgTx)}</p></div>
                 </div>
 
                 <div>

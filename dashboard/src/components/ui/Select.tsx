@@ -38,7 +38,7 @@ export function Select({
             'flex h-9 w-full items-center justify-between rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm',
             'focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent',
             'disabled:cursor-not-allowed disabled:opacity-50',
-            'data-[placeholder]:text-gray-400',
+            'data-placeholder:text-gray-400',
             error && 'border-red-500',
             className
           )}
@@ -50,7 +50,7 @@ export function Select({
         </SelectPrimitive.Trigger>
         <SelectPrimitive.Portal>
           <SelectPrimitive.Content
-            className="z-[200] max-h-60 overflow-auto rounded-lg border border-gray-200 bg-white shadow-lg"
+            className="z-200 max-h-60 overflow-auto rounded-lg border border-gray-200 bg-white shadow-lg"
             position="popper"
             sideOffset={4}
           >

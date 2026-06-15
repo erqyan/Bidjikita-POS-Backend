@@ -96,19 +96,36 @@ exports.createBundle = async (req, res) => {
     if (typeof items === "string") { try { items = JSON.parse(items); } catch { items = []; } }
     const image_url = req.file ? `/uploads/bundles/${req.file.filename}` : null;
 
-    if (!bundle_name || !bundle_price || !items || items.length === 0) {
+    if (!bundle_name || !bundle_name.trim() || !bundle_price || !items || items.length === 0) {
       return res.status(400).json({ message: "bundle_name, bundle_price, and items are required" });
     }
 
-    const existingBundle = await Bundle.findOne({ where: { bundle_name } });
+    const trimmedName = bundle_name.trim();
+
+    const existingBundle = await Bundle.findOne({ where: { bundle_name: trimmedName } });
     if (existingBundle) {
       return res.status(400).json({ message: "Bundle name already exists" });
+    }
+
+    // Check for duplicate items (same product_id + variant_id combination)
+    const seen = new Set();
+    for (const item of items) {
+      const key = `${item.product_id}-${item.variant_id || "default"}`;
+      if (seen.has(key)) {
+        return res.status(400).json({ message: "Terdapat produk/varian yang duplikat dalam bundle. Hapus duplikat sebelum menyimpan." });
+      }
+      seen.add(key);
     }
 
     let totalBundleCost = 0;
     for (const item of items) {
       const product = await Product.findByPk(item.product_id);
       if (!product) return res.status(404).json({ message: `Product ${item.product_id} not found` });
+
+      if (product.status === "out_of_stock") {
+        return res.status(400).json({ message: `Produk "${product.product_name}" sedang habis dan tidak dapat ditambahkan ke bundle.` });
+      }
+
       const variant = await resolveVariant(item.product_id, item.variant_id);
       if (!variant) {
         return res.status(400).json({ message: `Produk "${product.product_name}" tidak memiliki varian. Tambahkan varian terlebih dahulu.` });
@@ -117,7 +134,7 @@ exports.createBundle = async (req, res) => {
     }
 
     const bundle = await Bundle.create({
-      bundle_name,
+      bundle_name: trimmedName,
       description,
       image_url,
       bundle_price,
@@ -199,17 +216,34 @@ exports.updateBundle = async (req, res) => {
       newImageUrl = bodyImageUrl || null;
     }
 
-    if (bundle_name && bundle_name !== bundle.bundle_name) {
-      const existingBundle = await Bundle.findOne({ where: { bundle_name } });
+    const trimmedName = bundle_name ? bundle_name.trim() : undefined;
+
+    if (trimmedName && trimmedName !== bundle.bundle_name) {
+      const existingBundle = await Bundle.findOne({ where: { bundle_name: trimmedName } });
       if (existingBundle) return res.status(400).json({ message: "Bundle name already exists" });
     }
 
     let totalBundleCost = 0;
 
     if (items && items.length > 0) {
+      // Check for duplicate items (same product_id + variant_id combination)
+      const seen = new Set();
+      for (const item of items) {
+        const key = `${item.product_id}-${item.variant_id || "default"}`;
+        if (seen.has(key)) {
+          return res.status(400).json({ message: "Terdapat produk/varian yang duplikat dalam bundle. Hapus duplikat sebelum menyimpan." });
+        }
+        seen.add(key);
+      }
+
       for (const item of items) {
         const product = await Product.findByPk(item.product_id);
         if (!product) return res.status(404).json({ message: `Product ${item.product_id} not found` });
+
+        if (product.status === "out_of_stock") {
+          return res.status(400).json({ message: `Produk "${product.product_name}" sedang habis dan tidak dapat ditambahkan ke bundle.` });
+        }
+
         const variant = await resolveVariant(item.product_id, item.variant_id);
         if (!variant) {
           return res.status(400).json({ message: `Produk "${product.product_name}" tidak memiliki varian. Tambahkan varian terlebih dahulu.` });
@@ -239,7 +273,7 @@ exports.updateBundle = async (req, res) => {
 
     const newPrice = bundle_price !== undefined ? bundle_price : bundle.bundle_price;
     await bundle.update({
-      bundle_name: bundle_name || bundle.bundle_name,
+      bundle_name: trimmedName || bundle.bundle_name,
       description: description !== undefined ? description : bundle.description,
       image_url: newImageUrl,
       bundle_price: newPrice,

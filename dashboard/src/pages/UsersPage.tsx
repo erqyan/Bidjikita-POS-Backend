@@ -24,16 +24,27 @@ import { PageLoader } from '@/components/ui/Spinner';
 import { useToast } from '@/store/toastStore';
 import { formatDateTime } from '@/lib/utils';
 
+const phoneSchema = z
+  .string()
+  .optional()
+  .transform((v) => (v ?? '').trim() || undefined)
+  .pipe(
+    z
+      .string()
+      .regex(/^\d+$/, 'No. telepon hanya boleh mengandung angka')
+      .optional()
+  );
+
 const createSchema = z.object({
   full_name: z.string().min(1, 'Nama lengkap wajib diisi'),
   username: z.string().min(3, 'Username minimal 3 karakter'),
   password: z.string().min(6, 'Password minimal 6 karakter'),
-  phone_number: z.string().optional(),
+  phone_number: phoneSchema,
 });
 
 const editSchema = z.object({
   full_name: z.string().min(1, 'Nama lengkap wajib diisi'),
-  phone_number: z.string().optional(),
+  phone_number: phoneSchema,
 });
 
 const passwordSchema = z.object({
@@ -62,9 +73,9 @@ export default function UsersPage() {
     queryFn: () => getUsers().then((r) => r.data),
   });
 
-  const { register: regCreate, handleSubmit: hsCreate, reset: resetCreate, formState: { errors: errCreate, isSubmitting: subCreate } } = useForm<CreateForm>({ resolver: zodResolver(createSchema) });
-  const { register: regEdit, handleSubmit: hsEdit, reset: resetEdit, formState: { errors: errEdit, isSubmitting: subEdit } } = useForm<EditForm>({ resolver: zodResolver(editSchema) });
-  const { register: regPw, handleSubmit: hsPw, reset: resetPw, formState: { errors: errPw, isSubmitting: subPw } } = useForm<PasswordForm>({ resolver: zodResolver(passwordSchema) });
+  const { register: regCreate, handleSubmit: hsCreate, reset: resetCreate, formState: { errors: errCreate, isSubmitting: subCreate } } = useForm<CreateForm>({ resolver: zodResolver(createSchema) as any });
+  const { register: regEdit, handleSubmit: hsEdit, reset: resetEdit, formState: { errors: errEdit, isSubmitting: subEdit } } = useForm<EditForm>({ resolver: zodResolver(editSchema) as any });
+  const { register: regPw, handleSubmit: hsPw, reset: resetPw, formState: { errors: errPw, isSubmitting: subPw } } = useForm<PasswordForm>({ resolver: zodResolver(passwordSchema) as any });
 
   const createMutation = useMutation({
     mutationFn: (data: CreateForm) => createUser(data),
@@ -161,7 +172,7 @@ export default function UsersPage() {
                   <div className="flex justify-end gap-1">
                     <Button
                       variant="ghost" size="icon-sm"
-                      onClick={() => { setEditTarget(u); resetEdit({ full_name: u.full_name, phone_number: u.phone_number }); }}
+                      onClick={() => { setEditTarget(u); resetEdit({ full_name: u.full_name, phone_number: u.phone_number ?? undefined }); }}
                       title="Edit"
                     ><Pencil className="h-3.5 w-3.5" /></Button>
                     <Button
@@ -212,7 +223,7 @@ export default function UsersPage() {
       </Dialog>
 
       {/* Edit Dialog */}
-      <Dialog open={!!editTarget} onOpenChange={(v) => !v && setEditTarget(null)}>
+      <Dialog open={!!editTarget} onOpenChange={(v: boolean) => !v && setEditTarget(null)}>
         <DialogContent className="max-w-md">
           <DialogHeader><DialogTitle>Edit Pengguna</DialogTitle></DialogHeader>
           <form onSubmit={hsEdit((d) => editMutation.mutate(d))} className="space-y-4">
@@ -227,7 +238,7 @@ export default function UsersPage() {
       </Dialog>
 
       {/* Change Password Dialog */}
-      <Dialog open={!!passwordTarget} onOpenChange={(v) => !v && setPasswordTarget(null)}>
+      <Dialog open={!!passwordTarget} onOpenChange={(v: boolean) => !v && setPasswordTarget(null)}>
         <DialogContent className="max-w-md">
           <DialogHeader>
             <DialogTitle>Ganti Password</DialogTitle>
@@ -246,7 +257,7 @@ export default function UsersPage() {
 
       <ConfirmDialog
         open={!!deleteTarget}
-        onOpenChange={(v) => !v && setDeleteTarget(null)}
+        onOpenChange={(v: boolean) => !v && setDeleteTarget(null)}
         title="Hapus Pengguna"
         description={`Yakin ingin menghapus pengguna "${deleteTarget?.full_name || deleteTarget?.username}"? Tindakan ini tidak dapat dibatalkan.`}
         onConfirm={() => deleteTarget && deleteMutation.mutate(deleteTarget.id)}
