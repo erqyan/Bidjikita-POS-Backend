@@ -11,7 +11,7 @@ export interface User {
   is_active: boolean;
   last_login?: string;
   role_id: number;
-  Role?: Role;
+  role?: Role;
   createdAt?: string;
 }
 

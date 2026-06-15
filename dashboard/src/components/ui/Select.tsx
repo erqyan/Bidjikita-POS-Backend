@@ -35,7 +35,7 @@ export function Select({
       <SelectPrimitive.Root value={value} onValueChange={onValueChange} disabled={disabled}>
         <SelectPrimitive.Trigger
           className={cn(
-            'flex h-9 w-full items-center justify-between rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm',
+            'flex h-9 w-full items-center justify-between rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm cursor-pointer',
             'focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent',
             'disabled:cursor-not-allowed disabled:opacity-50',
             'data-placeholder:text-gray-400',

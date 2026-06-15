@@ -156,8 +156,8 @@ export default function UsersPage() {
                 <TableCell className="text-gray-600">@{u.username}</TableCell>
                 <TableCell className="text-gray-600">{u.phone_number || '-'}</TableCell>
                 <TableCell>
-                  <Badge variant={u.Role?.role_name === 'admin' ? 'warning' : 'default'}>
-                    {u.Role?.role_name || 'cashier'}
+                  <Badge variant={u.role?.role_name === 'admin' ? 'warning' : 'default'}>
+                    {u.role?.role_name || 'cashier'}
                   </Badge>
                 </TableCell>
                 <TableCell>

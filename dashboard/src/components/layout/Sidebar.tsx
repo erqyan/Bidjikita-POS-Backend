@@ -58,14 +58,14 @@ export function Sidebar() {
       <nav className="flex-1 px-3 py-4 overflow-y-auto">
         <div className="space-y-0.5">
           {navItems
-            .filter((item) => !item.adminOnly || user?.Role?.role_name === 'admin')
+            .filter((item) => !item.adminOnly || user?.role?.role_name === 'admin')
             .map(({ to, label, icon: Icon }) => (
             <NavLink
               key={to}
               to={to}
               className={({ isActive }: { isActive: boolean }) =>
                 cn(
-                  'flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all',
+                  'flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all cursor-pointer',
                   isActive
                     ? 'bg-amber-600 text-white'
                     : 'text-slate-400 hover:bg-slate-800 hover:text-white'
@@ -83,11 +83,11 @@ export function Sidebar() {
       <div className="px-3 py-4 border-t border-slate-700/50">
         <div className="mb-3 px-3">
           <p className="text-slate-200 text-sm font-medium truncate">{user?.full_name || user?.username}</p>
-          <p className="text-slate-500 text-xs truncate">{user?.Role?.role_name || 'Admin'}</p>
+          <p className="text-slate-500 text-xs truncate">{user?.role?.role_name || 'Admin'}</p>
         </div>
         <button
           onClick={handleLogout}
-          className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-slate-400 hover:bg-red-600/20 hover:text-red-400 transition-all"
+          className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-slate-400 hover:bg-red-600/20 hover:text-red-400 transition-all cursor-pointer"
         >
           <LogOut className="h-4 w-4" />
           Keluar

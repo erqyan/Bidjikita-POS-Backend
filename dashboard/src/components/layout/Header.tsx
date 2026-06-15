@@ -50,7 +50,7 @@ export function Header() {
                 <p className="text-sm font-medium text-gray-900 leading-none">
                   {user?.full_name || user?.username}
                 </p>
-                <p className="text-xs text-gray-500 mt-0.5">{user?.Role?.role_name || 'Admin'}</p>
+                <p className="text-xs text-gray-500 mt-0.5">{user?.role?.role_name || 'Admin'}</p>
               </div>
               <ChevronDown className="h-4 w-4 text-gray-400" />
             </button>
