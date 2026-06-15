@@ -13,6 +13,7 @@ import rawMaterialRoutes from './routes/rawMaterialRoutes';
 import orderRoutes from './routes/orderRoutes';
 import bundleRoutes from './routes/bundleRoutes';
 import analyticsRoutes from './routes/analyticsRoutes';
+import shiftRoutes from './routes/shiftRoutes';
 import userRoutes from './routes/userRoutes';
 
 const app = express();
@@ -41,6 +42,7 @@ app.use('/api/raw-materials', rawMaterialRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/bundles', bundleRoutes);
 app.use('/api/analytics', analyticsRoutes);
+app.use('/api/shifts', shiftRoutes);
 app.use('/api/users', userRoutes);
 
 app.get('/', (_req, res) => {

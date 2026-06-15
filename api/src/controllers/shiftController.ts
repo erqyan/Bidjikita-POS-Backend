@@ -43,7 +43,7 @@ export const getActiveShift = async (req: Request, res: Response) => {
   }
 };
 
-// Clock in — start a new shift
+// Clock in ï¿½ start a new shift
 export const clockIn = async (req: Request, res: Response) => {
   try {
     const existing = await prisma.shift.findFirst({
@@ -60,13 +60,21 @@ export const clockIn = async (req: Request, res: Response) => {
       },
     });
 
-    res.status(201).json(shift);
+    res.status(201).json({
+      id: shift.id,
+      start_time: shift.start_time,
+      starting_cash: Number(shift.starting_cash),
+      order_count: 0,
+      expected_cash: Number(shift.starting_cash),
+      expected_qris: 0,
+      status: shift.status,
+    });
   } catch (error) {
     res.status(500).json({ message: 'Gagal memulai shift' });
   }
 };
 
-// Clock out — end the current shift
+// Clock out ï¿½ end the current shift
 export const clockOut = async (req: Request, res: Response) => {
   try {
     const shift = await prisma.shift.findFirst({
