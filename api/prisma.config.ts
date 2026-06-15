@@ -1,11 +1,10 @@
+/// <reference types="node" />
+
 import { defineConfig } from 'prisma/config';
 
 export default defineConfig({
-  environments: {
-    default: {
-      database: {
-        url: process.env['DATABASE_URL'] || '',
-      },
-    },
+  datasource: {
+    url: process.env['DATABASE_URL'] || '',
   },
+  schema: 'prisma/schema.prisma',
 });
