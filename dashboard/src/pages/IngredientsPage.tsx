@@ -256,7 +256,7 @@ export default function IngredientsPage() {
           <TableHeader>
             <tr>
               <TableHead className="cursor-pointer select-none">
-                <button type="button" onClick={() => handleSort('name')} className="flex items-center gap-1 w-full">
+                <button type="button" onClick={() => handleSort('name')} className="flex items-center gap-1 w-full cursor-pointer">
                   Nama Bahan
                   {sortKey === 'name' ? (
                     sortDir === 'asc' ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />
@@ -266,7 +266,7 @@ export default function IngredientsPage() {
                 </button>
               </TableHead>
               <TableHead className="cursor-pointer select-none">
-                <button type="button" onClick={() => handleSort('unit')} className="flex items-center gap-1 w-full">
+                <button type="button" onClick={() => handleSort('unit')} className="flex items-center gap-1 w-full cursor-pointer">
                   Satuan
                   {sortKey === 'unit' ? (
                     sortDir === 'asc' ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />
@@ -276,7 +276,7 @@ export default function IngredientsPage() {
                 </button>
               </TableHead>
               <TableHead className="cursor-pointer select-none">
-                <button type="button" onClick={() => handleSort('cost')} className="flex items-center gap-1 w-full">
+                <button type="button" onClick={() => handleSort('cost')} className="flex items-center gap-1 w-full cursor-pointer">
                   Harga / Satuan
                   {sortKey === 'cost' ? (
                     sortDir === 'asc' ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />
@@ -286,7 +286,7 @@ export default function IngredientsPage() {
                 </button>
               </TableHead>
               <TableHead className="cursor-pointer select-none">
-                <button type="button" onClick={() => handleSort('stock')} className="flex items-center gap-1 w-full">
+                <button type="button" onClick={() => handleSort('stock')} className="flex items-center gap-1 w-full cursor-pointer">
                   Stok Saat Ini
                   {sortKey === 'stock' ? (
                     sortDir === 'asc' ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />
@@ -296,7 +296,7 @@ export default function IngredientsPage() {
                 </button>
               </TableHead>
               <TableHead className="cursor-pointer select-none">
-                <button type="button" onClick={() => handleSort('min_stock')} className="flex items-center gap-1 w-full">
+                <button type="button" onClick={() => handleSort('min_stock')} className="flex items-center gap-1 w-full cursor-pointer">
                   Stok Minimum
                   {sortKey === 'min_stock' ? (
                     sortDir === 'asc' ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />
@@ -307,7 +307,7 @@ export default function IngredientsPage() {
               </TableHead>
               <TableHead>Status</TableHead>
               <TableHead className="cursor-pointer select-none">
-                <button type="button" onClick={() => handleSort('updated')} className="flex items-center gap-1 w-full">
+                <button type="button" onClick={() => handleSort('updated')} className="flex items-center gap-1 w-full cursor-pointer">
                   Diperbarui
                   {sortKey === 'updated' ? (
                     sortDir === 'asc' ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />

@@ -35,14 +35,14 @@ export function Header() {
 
       <div className="flex items-center gap-3">
         {/* Notifications */}
-        <button className="relative rounded-lg p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors">
+        <button className="relative rounded-lg p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors cursor-pointer">
           <Bell className="h-5 w-5" />
         </button>
 
         {/* User Dropdown */}
         <DropdownMenu.Root>
           <DropdownMenu.Trigger asChild>
-            <button className="flex items-center gap-2 rounded-lg px-2 py-1.5 hover:bg-gray-100 transition-colors">
+            <button className="flex items-center gap-2 rounded-lg px-2 py-1.5 hover:bg-gray-100 transition-colors cursor-pointer">
               <div className="flex h-8 w-8 items-center justify-center rounded-full bg-amber-600 text-white text-xs font-semibold">
                 {initials}
               </div>

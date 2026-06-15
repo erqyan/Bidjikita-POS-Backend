@@ -51,8 +51,7 @@ export default function LoginPage() {
               className="h-20"
             />
           </div>
-          <h1 className="text-4xl font-bold text-white mb-3">Bidjikita</h1>
-          <p className="text-amber-400 text-lg font-medium mb-4">Admin Dashboard</p>
+          <h1 className="text-4xl font-bold text-white mb-3">Admin Dashboard</h1>
           <p className="text-slate-400 text-sm max-w-xs leading-relaxed">
             Kelola bisnis kopi Anda dengan mudah. Monitor penjualan, stok bahan, dan pelaporan.
           </p>
@@ -84,7 +83,6 @@ export default function LoginPage() {
                 />
               </div>
               <div>
-                <p className="font-bold text-gray-900">Bidjikita</p>
                 <p className="text-xs text-gray-500">Admin Dashboard</p>
               </div>
             </div>
@@ -120,7 +118,7 @@ export default function LoginPage() {
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 cursor-pointer"
                   >
                     {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                   </button>

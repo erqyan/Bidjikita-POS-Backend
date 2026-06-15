@@ -426,7 +426,7 @@ export default function BundlesPage() {
                                             <button
                                               type="button"
                                               onClick={clearImage}
-                                              className="absolute -top-2 -right-2 bg-red-500 hover:bg-red-600 text-white rounded-full p-0.5 shadow"
+                                              className="absolute -top-2 -right-2 bg-red-500 hover:bg-red-600 text-white rounded-full p-0.5 shadow cursor-pointer"
                                             >
                                               <X className="h-3.5 w-3.5" />
                                             </button>

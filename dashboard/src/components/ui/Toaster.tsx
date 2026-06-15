@@ -38,7 +38,7 @@ export function Toaster() {
           </div>
           <button
             onClick={() => removeToast(toast.id)}
-            className="shrink-0 rounded-md p-1 text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors"
+            className="shrink-0 rounded-md p-1 text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors cursor-pointer"
           >
             <X className="h-4 w-4" />
           </button>
