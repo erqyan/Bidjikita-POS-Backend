@@ -4,9 +4,9 @@
   "description": "Bidjikita POS REST API (Express + Prisma)",
   "main": "dist/index.js",
   "scripts": {
-    "build": "prisma generate --no-hints && prisma db push --skip-generate --accept-data-loss && tsc",
-    "start": "prisma generate --no-hints && prisma db push --skip-generate --accept-data-loss && tsc && node dist/index.js",
-    "dev": "prisma generate && prisma db push --skip-generate && tsx watch src/index.ts",
+    "build": "prisma generate --no-hints && tsc",
+    "start": "prisma generate --no-hints && prisma db push --accept-data-loss && tsc && node dist/index.js",
+    "dev": "prisma generate && tsx watch src/index.ts",
     "test": "echo \"Error: no test specified\" && exit 1",
     "postinstall": "prisma generate --no-hints"
   },
