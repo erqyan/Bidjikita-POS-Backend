@@ -36,6 +36,7 @@ model User {
   orders        Order[]
   transactions  Transaction[]
   ingredientLogs IngredientLog[]
+  shifts        Shift[]
 
   createdAt     DateTime        @default(now())
   updatedAt     DateTime        @updatedAt
@@ -215,8 +216,10 @@ model Order {
   order_status  OrderStatus  @default(pending)
   notes         String?      @db.Text
   user_id       Int?
+  shift_id      Int?
 
   user          User?        @relation(fields: [user_id], references: [id])
+  shift         Shift?       @relation(fields: [shift_id], references: [id])
   details       OrderDetail[]
   transaction   Transaction?
 
@@ -293,4 +296,25 @@ model Transaction {
   updatedAt        DateTime       @updatedAt
 
   @@map("transactions")
+}
+// ── Shifts ───────────────────────────────────────────────────────────────────
+model Shift {
+  id            Int      @id @default(autoincrement())
+  user_id       Int
+  start_time    DateTime @default(now())
+  end_time      DateTime?
+  starting_cash Decimal  @default(0) @db.Decimal(10, 2)
+  expected_cash Decimal? @db.Decimal(10, 2)
+  expected_qris Decimal? @db.Decimal(10, 2)
+  actual_cash   Decimal? @db.Decimal(10, 2)
+  actual_qris   Decimal? @db.Decimal(10, 2)
+  status        String   @default("active") @db.VarChar(50)
+
+  user          User     @relation(fields: [user_id], references: [id])
+  orders        Order[]
+
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@map("shifts")
 }

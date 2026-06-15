@@ -54,11 +54,18 @@ export const createOrder = async (req: Request, res: Response) => {
     const dateStr = today.toISOString().split('T')[0].replace(/-/g, '');
     const order_number = dateStr + '-' + pad;
 
+    // Attach to active shift if one exists
+    const activeShift = await prisma.shift.findFirst({
+      where: { user_id: req.user!.id, status: 'active' },
+      select: { id: true },
+    });
+
     const order = await prisma.order.create({
       data: {
         order_number,
         notes,
         user_id: req.user!.id,
+        shift_id: activeShift?.id || null,
         total_amount: 0,
       },
     });
