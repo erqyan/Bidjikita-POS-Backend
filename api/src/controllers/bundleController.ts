@@ -21,8 +21,10 @@ const bundleWithItems = {
           },
         },
         product: {
-          select: { id: true, product_name: true, image_url: true },
-          include: {
+          select: {
+            id: true,
+            product_name: true,
+            image_url: true,
             variants: {
               select: { id: true, variant_name: true, price: true },
             },
