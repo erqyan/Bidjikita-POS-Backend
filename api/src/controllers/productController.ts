@@ -134,19 +134,41 @@ export const getProducts = async (_req: Request, res: Response) => {
       orderBy: { product_name: 'asc' },
     });
 
-    // Enrich each product with a low_stock flag
+    // Enrich each product with a low_stock flag and map to old field names
     const enriched = products.map((p) => {
       let lowStock = false;
-      for (const v of p.variants) {
-        for (const ing of v.ingredients) {
-          if (Number(ing.rawMaterial.stock) <= Number(ing.rawMaterial.minimum_stock)) {
+      const variants = p.variants.map((v) => {
+        // Rename ingredients -> VariantIngredients, rawMaterial -> RawMaterial
+        const ingredients = v.ingredients.map((ing) => ({
+          ...ing,
+          RawMaterial: ing.rawMaterial,
+          rawMaterial: undefined,
+        }));
+        return {
+          ...v,
+          VariantIngredients: ingredients,
+          ingredients: undefined,
+        };
+      });
+
+      for (const v of variants) {
+        for (const ing of v.VariantIngredients) {
+          if (Number(ing.RawMaterial.stock) <= Number(ing.RawMaterial.minimum_stock)) {
             lowStock = true;
             break;
           }
         }
         if (lowStock) break;
       }
-      return { ...p, low_stock: lowStock };
+
+      return {
+        ...p,
+        variants: undefined,
+        category: undefined,
+        low_stock: lowStock,
+        Category: p.category,
+        ProductVariants: variants,
+      };
     });
 
     res.json(enriched);
