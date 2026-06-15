@@ -106,7 +106,7 @@ export default function AnalyticsPage() {
                 <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
                 <XAxis dataKey="date" tick={{ fontSize: 11, fill: '#94a3b8' }} tickFormatter={(v: any) => new Date(v).toLocaleDateString('id-ID', { month: 'short', day: 'numeric' })} />
                 <YAxis tick={{ fontSize: 11, fill: '#94a3b8' }} tickFormatter={(v: any) => `${(v / 1000).toFixed(0)}K`} />
-                <Tooltip formatter={(value: any) => [formatCurrency(value), 'Pendapatan']} labelFormatter={(l: string) => new Date(l).toLocaleDateString('id-ID', { weekday: 'long', month: 'long', day: 'numeric' })} contentStyle={{ borderRadius: '12px', border: '1px solid #e2e8f0', fontSize: 12 }} />
+                <Tooltip formatter={(value: any) => [formatCurrency(value), 'Pendapatan']} labelFormatter={(l: any) => new Date(l).toLocaleDateString('id-ID', { weekday: 'long', month: 'long', day: 'numeric' })} contentStyle={{ borderRadius: '12px', border: '1px solid #e2e8f0', fontSize: 12 }} />
                 <Area type="monotone" dataKey="revenue" stroke="#d97706" strokeWidth={2} fill="url(#areaGrad)" />
               </AreaChart>
             </ResponsiveContainer>
@@ -158,7 +158,7 @@ export default function AnalyticsPage() {
                       const labels: Record<string, string> = { revenue: 'Pendapatan', cost: 'Biaya', profit: 'Keuntungan' };
                       return [formatCurrency(value), labels[name] || name];
                     }}
-                    labelFormatter={(l: string) => new Date(l).toLocaleDateString('id-ID', { weekday: 'long', month: 'long', day: 'numeric' })}
+                    labelFormatter={(l: any) => new Date(l).toLocaleDateString('id-ID', { weekday: 'long', month: 'long', day: 'numeric' })}
                     contentStyle={{ borderRadius: '12px', border: '1px solid #e2e8f0', fontSize: 12 }}
                   />
                   <Legend formatter={(value: string) => {
