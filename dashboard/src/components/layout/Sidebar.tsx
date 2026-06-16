@@ -9,7 +9,7 @@ import {
 
   Users,
   LogOut,
-  Coffee,
+  Clock,
 } from 'lucide-react';
 import { useAuthStore } from '@/store/authStore';
 import { cn } from '@/lib/utils';
@@ -23,6 +23,7 @@ const navItems: NavItem[] = [
   { to: '/bundles', label: 'Bundling', icon: Package, adminOnly: true },
   { to: '/orders', label: 'Transaksi', icon: ShoppingCart },
   { to: '/analytics', label: 'Analitik', icon: BarChart3, adminOnly: true },
+  { to: '/shifts', label: 'Shift', icon: Clock, adminOnly: true },
   { to: '/users', label: 'Pengguna', icon: Users, adminOnly: true },
 ];
 

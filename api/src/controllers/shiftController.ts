@@ -126,3 +126,86 @@ export const clockOut = async (req: Request, res: Response) => {
     res.status(500).json({ message: 'Gagal mengakhiri shift' });
   }
 };
+
+
+// Get all shifts (admin panel)
+export const getAllShifts = async (req: Request, res: Response) => {
+  try {
+    const shifts = await prisma.shift.findMany({
+      include: {
+        user: { select: { id: true, full_name: true, username: true } },
+      },
+      orderBy: { start_time: 'desc' },
+    });
+
+    const result = shifts.map((s) => ({
+      id: s.id,
+      user_id: s.user_id,
+      user_name: s.user?.full_name || s.user?.username || '-',
+      start_time: s.start_time,
+      end_time: s.end_time,
+      starting_cash: Number(s.starting_cash),
+      expected_cash: s.expected_cash ? Number(s.expected_cash) : null,
+      expected_qris: s.expected_qris ? Number(s.expected_qris) : null,
+      actual_cash: s.actual_cash ? Number(s.actual_cash) : null,
+      actual_qris: s.actual_qris ? Number(s.actual_qris) : null,
+      status: s.status,
+    }));
+
+    res.json(result);
+  } catch (error) {
+    res.status(500).json({ message: 'Failed to fetch shifts' });
+  }
+};
+
+// Get shift detail with orders (admin panel)
+export const getShiftById = async (req: Request, res: Response) => {
+  try {
+    const id = parseInt(req.params.id as string);
+    const shift = await prisma.shift.findUnique({
+      where: { id },
+      include: {
+        user: { select: { id: true, full_name: true, username: true } },
+        orders: {
+          include: {
+            transaction: { select: { id: true, invoice_number: true, payment_method: true, total_amount: true } },
+            details: {
+              select: { id: true, product_id: true, quantity: true, price: true, subtotal: true, bundle_name: true },
+            },
+          },
+        },
+      },
+    });
+
+    if (!shift) return res.status(404).json({ message: 'Shift not found' });
+
+    res.json({
+      id: shift.id,
+      user_name: shift.user?.full_name || shift.user?.username || '-',
+      start_time: shift.start_time,
+      end_time: shift.end_time,
+      starting_cash: Number(shift.starting_cash),
+      expected_cash: shift.expected_cash ? Number(shift.expected_cash) : null,
+      expected_qris: shift.expected_qris ? Number(shift.expected_qris) : null,
+      actual_cash: shift.actual_cash ? Number(shift.actual_cash) : null,
+      actual_qris: shift.actual_qris ? Number(shift.actual_qris) : null,
+      status: shift.status,
+      orders: shift.orders.map((o) => ({
+        id: o.id,
+        order_number: o.order_number,
+        invoice: o.transaction?.invoice_number || '-',
+        payment_method: o.transaction?.payment_method || '-',
+        total_amount: Number(o.transaction?.total_amount || 0),
+        items: o.details.map((d) => ({
+          product_id: d.product_id,
+          quantity: d.quantity,
+          price: Number(d.price),
+          subtotal: Number(d.subtotal),
+          bundle_name: d.bundle_name,
+        })),
+      })),
+    });
+  } catch (error) {
+    res.status(500).json({ message: 'Failed to fetch shift detail' });
+  }
+};

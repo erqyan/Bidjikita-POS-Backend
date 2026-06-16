@@ -12,6 +12,7 @@ const BundlesPage = lazy(() => import('@/pages/BundlesPage'));
 const OrdersPage = lazy(() => import('@/pages/OrdersPage'));
 const AnalyticsPage = lazy(() => import('@/pages/AnalyticsPage'));
 const UsersPage = lazy(() => import('@/pages/UsersPage'));
+const ShiftsPage = lazy(() => import('@/pages/ShiftsPage'));
 
 function ProtectedRoute() {
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
@@ -39,6 +40,7 @@ export default function App() {
           <Route path="/analytics" element={<AnalyticsPage />} />
 
           <Route path="/users" element={<UsersPage />} />
+          <Route path="/shifts" element={<ShiftsPage />} />
         </Route>
       </Route>
 
