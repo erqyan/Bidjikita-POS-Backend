@@ -20,7 +20,11 @@ const app = express();
 
 // Security
 app.use(helmet({ contentSecurityPolicy: false, crossOriginResourcePolicy: { policy: 'cross-origin' } }));
-app.use(cors({ origin: process.env.CORS_ORIGIN || '*' }));
+app.use(cors({
+  origin: process.env.CORS_ORIGIN
+    ? process.env.CORS_ORIGIN.split(',').map((o) => o.trim())
+    : ['*', 'https://bidjikita-dashboard.netlify.app'],
+}));
 
 // Body parsing
 app.use(express.json({ limit: '5mb' }));

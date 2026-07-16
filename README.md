@@ -49,9 +49,9 @@ Bidjikita-POS-Backend/
 - **Menu Management** — Products with multi-variant support, each variant has its own price, overhead cost, and ingredient list. Target profit margin with automatic price calculation.
 - **Bahan Baku** — Raw material inventory with sortable columns, stock status indicators, and per-ingredient audit log tracking all additions and deductions.
 - **Bundling** — Product bundles with price comparison against individual items, profit/cost calculation, and image collage from constituent products.
-- **Transaksi** — Transaction history with date range filter, cashier filter, payment method filter, and invoice search. Detail view groups bundle purchases and shows bundle price.
-- **Laporan Keuangan** — Financial report with date range selection, summary cards (revenue, cost, profit), payment method breakdown, top products, full transaction list. Export to Excel (xlsx) or PDF (print).
+- **Transaksi** — Transaction history with date range filter, cashier filter, payment method filter, and invoice search. Detail view groups bundle purchases and shows bundle price. Includes a financial report section (revenue/cost/profit summary, payment method breakdown, top products) exportable to Excel (xlsx) or PDF (print).
 - **Analitik** — Revenue trend chart, net profit chart (revenue vs cost vs profit), payment method distribution pie chart, top products bar chart with value labels.
+- **Shift** — Admin-only view of all cashier shifts: clock-in/clock-out times, starting cash, expected vs actual cash/QRIS, and order count per shift.
 - **Users** — User management with role assignment.
 
 ### Backend API
@@ -64,6 +64,7 @@ Bidjikita-POS-Backend/
 - Ingredient audit log tracking every stock change (manual adjustments and order deductions)
 - Financial report endpoint aggregating revenue, cost, and profit across date ranges
 - Analytics endpoints for dashboard charts and summaries
+- Shift management: clock-in/clock-out with starting cash, expected cash/QRIS reconciliation against orders placed during the shift
 - Product update preserves variant IDs to prevent bundle references from breaking
 - **Full TypeScript** — Compile-time safety across all API code
 - **Prisma ORM** — Auto-generated types, type-safe queries, no raw SQL injection risk
@@ -76,6 +77,8 @@ Bidjikita-POS-Backend/
 - Cash and QRIS payment flow with change calculation
 - Bundle items sent as single order lines with expanded contents for stock tracking
 - Order and transaction creation via API
+- Shift clock-in/clock-out with starting cash and live cash/QRIS reconciliation dashboard
+- Configurable Bluetooth or network ESC/POS thermal printer with paper size setting
 
 ---
 
@@ -246,6 +249,26 @@ Base URL: `http://localhost:5000/api`
 | GET | `/analytics/top-products` | Admin |
 | GET | `/analytics/payment-methods` | Admin |
 | GET | `/analytics/financial-report` | Admin |
+
+### Variants
+
+| Method | Endpoint | Access |
+|--------|----------|--------|
+| GET | `/variants` | Public |
+| GET | `/variants/:id` | Public |
+| POST | `/variants` | Admin |
+| PUT | `/variants/:id` | Admin |
+| DELETE | `/variants/:id` | Admin |
+
+### Shifts
+
+| Method | Endpoint | Access |
+|--------|----------|--------|
+| GET | `/shifts/active` | Authenticated (own active shift) |
+| POST | `/shifts/clock-in` | Authenticated |
+| PUT | `/shifts/clock-out` | Authenticated |
+| GET | `/shifts` | Admin (all shifts) |
+| GET | `/shifts/:id` | Admin |
 
 ### Users
 
