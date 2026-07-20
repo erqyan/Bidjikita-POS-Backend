@@ -53,7 +53,7 @@ async function main() {
 
   // Step 3: Generate orders with transactions
   const startDate = new Date('2026-06-01T08:00:00Z');
-  const endDate = new Date('2026-07-31T22:00:00Z');
+  const endDate = new Date('2026-07-19T22:00:00Z');
   const payMethods = ['cash', 'qris'];
   let total = 0, rev = 0, failed = 0;
 
