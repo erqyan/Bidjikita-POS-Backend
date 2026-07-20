@@ -73,7 +73,7 @@ async function main() {
         orderItems.push({ product_id: item.product_id, quantity: qty, variant_ids: item.variant_ids });
       }
 
-      const orRes = await fetch(`${BASE}/orders`, { method: 'POST', headers: auth, body: JSON.stringify({ notes: '', items: orderItems }) });
+      const orRes = await fetch(`${BASE}/orders`, { method: 'POST', headers: auth, body: JSON.stringify({ notes: '', items: orderItems, created_at: orderDate.toISOString() }) });
       const or = await orRes.json();
       if (!or || !or.id) { failed++; continue; }
 

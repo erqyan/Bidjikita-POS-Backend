@@ -38,20 +38,20 @@ const orderSelect = {
 // ── CREATE ORDER ───────────────────────────────────────────────────────────
 export const createOrder = async (req: Request, res: Response) => {
   try {
-    const { notes, items } = req.body;
+    const { notes, items, created_at } = req.body;
 
     if (!items || !Array.isArray(items) || items.length === 0) {
       return res.status(400).json({ message: 'Items cannot be empty' });
     }
 
-    // Daily sequential: YYYYMMDD-XXXX (e.g. 20260614-0001)
-    const today = new Date();
-    const startOfDay = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+    // Use provided date for seeding, or current time
+    const orderDate = created_at ? new Date(created_at) : new Date();
+    const startOfDay = new Date(orderDate.getFullYear(), orderDate.getMonth(), orderDate.getDate());
     const todayCount = await prisma.order.count({
       where: { createdAt: { gte: startOfDay } },
     });
     const pad = String(todayCount + 1).padStart(4, '0');
-    const dateStr = today.toISOString().split('T')[0].replace(/-/g, '');
+    const dateStr = orderDate.toISOString().split('T')[0].replace(/-/g, '');
     const order_number = dateStr + '-' + pad;
 
     // Attach to active shift if one exists
@@ -67,6 +67,8 @@ export const createOrder = async (req: Request, res: Response) => {
         user_id: req.user!.id,
         shift_id: activeShift?.id || null,
         total_amount: 0,
+        createdAt: created_at ? new Date(created_at) : undefined,
+        updatedAt: created_at ? new Date(created_at) : undefined,
       },
     });
 

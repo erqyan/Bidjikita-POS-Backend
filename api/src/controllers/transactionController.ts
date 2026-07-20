@@ -48,7 +48,7 @@ const transactionSelect = {
 
 export const createTransaction = async (req: Request, res: Response) => {
   try {
-    const { order_id, payment_method, payment_status, notes } = req.body;
+    const { order_id, payment_method, payment_status, notes, transaction_date } = req.body;
 
     // Check order exists
     const order = await prisma.order.findUnique({
@@ -73,13 +73,15 @@ export const createTransaction = async (req: Request, res: Response) => {
     const transaction = await prisma.transaction.create({
       data: {
         invoice_number,
-        transaction_date: new Date(),
+        transaction_date: transaction_date ? new Date(transaction_date) : new Date(),
         total_amount: order.total_amount,
         payment_method,
         payment_status,
         notes,
         user_id: req.user!.id,
         order_id,
+        createdAt: transaction_date ? new Date(transaction_date) : undefined,
+        updatedAt: transaction_date ? new Date(transaction_date) : undefined,
       },
     });
 
