@@ -51,8 +51,8 @@ export default function OrdersPage() {
   const cashierOptions = useMemo(() => {
     const map = new Map<number, string>();
     for (const tx of transactions) {
-      if (tx.User?.id && tx.User?.full_name) {
-        map.set(tx.User.id, tx.User.full_name);
+      if (tx.user?.id && tx.user?.full_name) {
+        map.set(tx.user.id, tx.user.full_name);
       }
     }
     return Array.from(map.entries()).map(([id, name]) => ({ value: String(id), label: name }));
@@ -62,7 +62,7 @@ export default function OrdersPage() {
     return transactions.filter((tx) => {
       const matchSearch = !search || tx.invoice_number.toLowerCase().includes(search.toLowerCase());
       const matchMethod = methodFilter === 'all' || tx.payment_method === methodFilter;
-      const matchCashier = cashierFilter === 'all' || String(tx.User?.id) === cashierFilter;
+      const matchCashier = cashierFilter === 'all' || String(tx.user?.id) === cashierFilter;
 
       // Date range filter
       let matchDate = true;
@@ -268,7 +268,7 @@ export default function OrdersPage() {
               <TableRow key={tx.id}>
                 <TableCell className="font-mono text-xs font-medium">{tx.invoice_number}</TableCell>
                 <TableCell className="text-gray-600 text-xs">{formatDateTime(tx.transaction_date)}</TableCell>
-                <TableCell>{tx.User?.full_name || tx.User?.username || '-'}</TableCell>
+                <TableCell>{tx.user?.full_name || tx.user?.username || '-'}</TableCell>
                 <TableCell>
                     <Badge variant={paymentMethodVariant[tx.payment_method] || 'default'}>
                       {paymentMethodLabel[tx.payment_method] || tx.payment_method}
@@ -299,16 +299,16 @@ export default function OrdersPage() {
               <div className="grid grid-cols-2 gap-3 text-sm">
                 <div><p className="text-gray-500">No. Faktur</p><p className="font-mono font-medium">{viewTx.invoice_number}</p></div>
                 <div><p className="text-gray-500">Tanggal</p><p className="font-medium">{formatDateTime(viewTx.transaction_date)}</p></div>
-                <div><p className="text-gray-500">Kasir</p><p className="font-medium">{viewTx.User?.full_name || viewTx.User?.username || '-'}</p></div>
+                <div><p className="text-gray-500">Kasir</p><p className="font-medium">{viewTx.user?.full_name || viewTx.user?.username || '-'}</p></div>
 
                 <div><p className="text-gray-500">Metode Bayar</p><p className="font-medium capitalize">{paymentMethodLabel[viewTx.payment_method]}</p></div>
               </div>
 
-              {viewTx.Order?.OrderDetails && viewTx.Order.OrderDetails.length > 0 && (
+              {viewTx.order?.details && viewTx.order.details.length > 0 && (
                 <div>
                   <p className="text-sm font-medium text-gray-700 mb-2">Item Pesanan</p>
                   <div className="rounded-lg border border-gray-100 divide-y divide-gray-100">
-                    {viewTx.Order.OrderDetails.map((od) => {
+                    {viewTx.order.details.map((od) => {
                       // ── Bundle item ─────────────────────────────────────
                       if (od.bundle_id && od.bundle_items_json) {
                         let bundleContents: { product_name?: string; variant_name?: string; quantity?: number }[] = [];
@@ -325,7 +325,7 @@ export default function OrdersPage() {
                           <div key={od.id} className="px-4 py-3">
                             <div className="flex items-center gap-2 mb-1.5">
                               <span className="text-xs font-semibold text-amber-700 bg-amber-50 px-2 py-0.5 rounded">BUNDLE</span>
-                              <span className="font-semibold text-gray-900 text-sm">{od.Bundle?.bundle_name || od.bundle_name || `Bundle #${od.bundle_id}`}</span>
+                              <span className="font-semibold text-gray-900 text-sm">{od.bundle?.bundle_name || od.bundle_name || `Bundle #${od.bundle_id}`}</span>
                             </div>
                             <div className="flex justify-between items-center mb-2">
                               <span className="text-sm text-gray-500">{od.quantity}× Bundle</span>
@@ -351,10 +351,10 @@ export default function OrdersPage() {
                       return (
                         <div key={od.id} className="flex justify-between items-center px-4 py-2.5 text-sm">
                           <div>
-                            <p className="font-medium">{od.Product?.product_name || '-'}</p>
-                            {od.OrderDetailVariants && od.OrderDetailVariants.length > 0 && (
+                            <p className="font-medium">{od.product?.product_name || '-'}</p>
+                            {od.variantSelections && od.variantSelections.length > 0 && (
                               <p className="text-xs text-gray-500">
-                                {od.OrderDetailVariants.map((odv) => odv.ProductVariant?.variant_name).filter(Boolean).join(', ')}
+                                {od.variantSelections.map((odv) => odv.variant?.variant_name).filter(Boolean).join(', ')}
                               </p>
                             )}
                           </div>

@@ -139,65 +139,20 @@ export const getProducts = async (req: Request, res: Response) => {
       orderBy: { product_name: 'asc' },
     });
 
-    if (simple) {
-      const enriched = products.map((p) => {
-        const plainVariants = p.variants.map((v) => ({
-          id: v.id,
-          variant_name: v.variant_name,
-          price: v.price,
-          overhead_cost: v.overhead_cost,
-          product_id: v.product_id,
-          createdAt: v.createdAt,
-          updatedAt: v.updatedAt,
-          VariantIngredients: [],
-        }));
-        return {
-          ...p,
-          Category: p.category,
-          category: undefined,
-          ProductVariants: plainVariants,
-          variants: undefined,
-          low_stock: false,
-        };
-      });
-      return res.json(enriched);
-    }
-
-    // Enrich each product with a low_stock flag and map to old field names
-    const enriched = (products as any[]).map((p: any) => {
+    // Enrich each product with a low_stock flag (use Prisma-native field names)
+    const enriched = products.map((p: any) => {
       let lowStock = false;
-      const variants = p.variants.map((v: any) => {
-        // Rename ingredients -> VariantIngredients, rawMaterial -> RawMaterial
-        const ingredients = v.ingredients.map((ing: any) => ({
-          ...ing,
-          RawMaterial: ing.rawMaterial,
-          rawMaterial: undefined,
-        }));
-        return {
-          ...v,
-          VariantIngredients: ingredients,
-          ingredients: undefined,
-        };
-      });
-
-      for (const v of variants) {
-        for (const ing of v.VariantIngredients) {
-          if (Number(ing.RawMaterial.stock) <= Number(ing.RawMaterial.minimum_stock)) {
+      for (const v of (p.variants || [])) {
+        for (const ing of (v.ingredients || [])) {
+          const mat = ing.rawMaterial;
+          if (mat && Number(mat.stock) <= Number(mat.minimum_stock)) {
             lowStock = true;
             break;
           }
         }
         if (lowStock) break;
       }
-
-      return {
-        ...p,
-        variants: undefined,
-        category: undefined,
-        low_stock: lowStock,
-        Category: p.category,
-        ProductVariants: variants,
-      };
+      return { ...p, low_stock: lowStock };
     });
 
     res.json(enriched);

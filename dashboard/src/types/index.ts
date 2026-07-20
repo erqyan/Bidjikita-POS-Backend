@@ -36,8 +36,8 @@ export interface ProductVariant {
   price: number;
   overhead_cost: number;
   product_id: number;
-  Product?: Pick<Product, "id" | "product_name">;
-  VariantIngredients?: VariantIngredient[];
+  product?: Pick<Product, "id" | "product_name">;
+  ingredients?: VariantIngredient[];
 }
 
 export interface Product {
@@ -48,8 +48,8 @@ export interface Product {
   is_active: boolean;
   image_url?: string;
   category_id: number;
-  Category?: Category;
-  ProductVariants?: ProductVariant[];
+  category?: Category;
+  variants?: ProductVariant[];
   createdAt?: string;
 }
 
@@ -89,8 +89,8 @@ export interface BundleItem {
   product_id: number;
   variant_id?: number;
   quantity: number;
-  Product?: Pick<Product, 'id' | 'product_name' | 'image_url'>;
-  ProductVariant?: Pick<ProductVariant, 'id' | 'variant_name' | 'price' | 'overhead_cost' | 'VariantIngredients'>;
+  product?: Pick<Product, 'id' | 'product_name' | 'image_url'>;
+  variant?: Pick<ProductVariant, 'id' | 'variant_name' | 'price' | 'overhead_cost' | 'ingredients'>;
 }
 
 export interface Bundle {
@@ -102,14 +102,14 @@ export interface Bundle {
   total_bundle_cost: number;
   bundle_profit: number;
   is_active: boolean;
-  BundleItems?: BundleItem[];
+  items?: BundleItem[];
   createdAt?: string;
 }
 
 export interface OrderDetailVariant {
   id: number;
   variant_id: number;
-  ProductVariant?: Pick<ProductVariant, 'id' | 'variant_name' | 'price'>;
+  variant?: Pick<ProductVariant, 'id' | 'variant_name' | 'price'>;
 }
 
 export interface OrderDetail {
@@ -117,12 +117,12 @@ export interface OrderDetail {
   quantity: number;
   price: number;
   subtotal: number;
-  Product?: Pick<Product, 'id' | 'product_name'>;
-  OrderDetailVariants?: OrderDetailVariant[];
+  product?: Pick<Product, 'id' | 'product_name'>;
+  variantSelections?: OrderDetailVariant[];
   bundle_id?: number | null;
   bundle_name?: string | null;
   bundle_items_json?: string | null;
-  Bundle?: Pick<Bundle, 'id' | 'bundle_name' | 'bundle_price'>;
+  bundle?: Pick<Bundle, 'id' | 'bundle_name' | 'bundle_price'>;
 }
 
 
@@ -135,8 +135,8 @@ export interface Order {
   notes?: string;
   user_id: number;
   createdAt: string;
-  User?: Pick<User, "id" | "full_name" | "username">;
-  OrderDetails?: OrderDetail[];
+  user?: Pick<User, "id" | "full_name" | "username">;
+  details?: OrderDetail[];
 }
 
 export interface Transaction {
@@ -149,8 +149,8 @@ export interface Transaction {
   notes?: string;
   order_id: number;
   user_id: number;
-  User?: Pick<User, "id" | "full_name" | "username">;
-  Order?: Order;
+  user?: Pick<User, "id" | "full_name" | "username">;
+  order?: Order;
   createdAt?: string;
 }
 

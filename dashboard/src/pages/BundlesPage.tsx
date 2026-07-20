@@ -23,10 +23,10 @@ import apiClient from '@/lib/api';
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
 /** Production cost of a variant: sum(ingredient_qty × cost_per_unit) + overhead. */
-function getVariantCost(v: Pick<ProductVariant, 'overhead_cost' | 'VariantIngredients'> | undefined): number {
+function getVariantCost(v: Pick<ProductVariant, 'overhead_cost' | 'ingredients'> | undefined): number {
   if (!v) return 0;
-  const ingCost = (v.VariantIngredients || []).reduce(
-    (sum, vi) => sum + Number(vi.quantity) * Number(vi.RawMaterial?.cost_per_unit || 0), 0,
+  const ingCost = (v.ingredients || []).reduce(
+    (sum: number, vi: any) => sum + Number(vi.quantity) * Number(vi.rawMaterial?.cost_per_unit || 0), 0,
   );
   return ingCost + Number(v.overhead_cost || 0);
 }
@@ -39,10 +39,10 @@ function getVariantPrice(v: Pick<ProductVariant, 'price'> | undefined): number {
 /** Resolve the selected variant for a bundle item. Falls back to first variant. */
 function resolveVariant(product: Product, variantId: number | undefined): ProductVariant | undefined {
   if (variantId) {
-    const found = product.ProductVariants?.find((v) => v.id === variantId);
+    const found = product.variants?.find((v) => v.id === variantId);
     if (found) return found;
   }
-  return product.ProductVariants?.[0];
+  return product.variants?.[0];
 }
 
 // ── Schema ───────────────────────────────────────────────────────────────────
@@ -153,7 +153,7 @@ function LiveCalculation({
 function BundleImageCollage({ items }: { items: BundleItem[] }) {
   // Deduplicate so the same product image doesn't repeat
   const images = Array.from(
-    new Set(items.map((item) => item.Product?.image_url).filter(Boolean))
+    new Set(items.filter((item): item is BundleItem => !!item.product).map((item) => item.product!.image_url).filter(Boolean))
   ).slice(0, 4) as string[];
 
   if (images.length === 0) {
@@ -252,7 +252,7 @@ export default function BundlesPage() {
       bundle_name: b.bundle_name,
       description: b.description,
       bundle_price: b.bundle_price,
-      items: b.BundleItems?.map((i) => ({ product_id: i.product_id, variant_id: i.variant_id ?? (i as any).ProductVariant?.id, quantity: i.quantity })) || [{ product_id: 0, quantity: 1 }],
+      items: (b.items || []).map((i) => ({ product_id: i.product_id, variant_id: i.variant_id ?? i.variant?.id, quantity: i.quantity })) || [{ product_id: 0, quantity: 1 }],
     });
     setOpen(true);
   };
@@ -317,8 +317,8 @@ export default function BundlesPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
           {bundles.map((b) => {
             const totalCost = b.total_bundle_cost;
-            const individualTotal = (b.BundleItems || []).reduce((sum, item) => {
-              const variant = item.ProductVariant;
+            const individualTotal = (b.items || []).reduce((sum, item) => {
+              const variant = item.variant;
               return sum + getVariantPrice(variant) * item.quantity;
             }, 0);
             const savings = individualTotal - b.bundle_price;
@@ -328,7 +328,7 @@ export default function BundlesPage() {
                               {b.image_url ? (
                                 <img src={getMediaUrl(b.image_url)} alt="" loading="lazy" className="h-44 w-full object-cover rounded-t-xl" />
                               ) : (
-                                <BundleImageCollage items={b.BundleItems || []} />
+                                <BundleImageCollage items={b.items || []} />
                               )}
                               <CardContent className="p-3">
                   <div className="flex items-start justify-between mb-2">
@@ -341,16 +341,16 @@ export default function BundlesPage() {
                     </Badge>
                   </div>
 
-                  {b.BundleItems && b.BundleItems.length > 0 && (
+                  {b.items && b.items.length > 0 && (
                     <div className="mb-2">
                       <p className="text-xs font-medium text-gray-400 mb-1.5">PRODUK DALAM BUNDLE:</p>
                       <ul className="space-y-1">
-                        {b.BundleItems.map((item) => {
-                          const variantName = item.ProductVariant?.variant_name;
+                        {b.items.map((item) => {
+                          const variantName = item.variant?.variant_name;
                           return (
                             <li key={item.id} className="flex items-center gap-1.5 text-sm text-gray-700">
                               <span className="h-1.5 w-1.5 rounded-full bg-amber-400 shrink-0" />
-                              {item.Product?.product_name || `Produk #${item.product_id}`}
+                              {item.product?.product_name || `Produk #${item.product_id}`}
                               {variantName && <span className="text-gray-400">— {variantName}</span>}
                               <span className="text-gray-400">×{item.quantity}</span>
                             </li>
@@ -481,7 +481,7 @@ export default function BundlesPage() {
                             f.onChange(productId);
                             // Auto-set variant_id if product has exactly 1 variant
                             const product = products.find((p) => p.id === productId);
-                            const vars = product?.ProductVariants ?? [];
+                            const vars = product?.variants ?? [];
                             if (vars.length === 1) {
                               setValue(`items.${idx}.variant_id`, vars[0].id);
                             } else {
@@ -496,7 +496,7 @@ export default function BundlesPage() {
                     {/* Variant selector — only when product has multiple variants */}
                     {(() => {
                       const selectedProduct = products.find((p) => p.id === Number(watchedItems?.[idx]?.product_id));
-                      const variants = selectedProduct?.ProductVariants ?? [];
+                      const variants = selectedProduct?.variants ?? [];
                       if (variants.length <= 1) return null;
                       return (
                         <div className="w-40">

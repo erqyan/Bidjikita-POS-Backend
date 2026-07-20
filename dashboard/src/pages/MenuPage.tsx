@@ -512,7 +512,7 @@ function MenuItemsTab() {
   const deleteTargetBundleWarning = useMemo(() => {
     if (!deleteTarget) return undefined;
     const affected = bundles.filter((b) =>
-      b.BundleItems?.some((item) => item.product_id === deleteTarget.id)
+      b.items?.some((item) => item.product_id === deleteTarget.id)
     );
     if (!affected.length) return undefined;
     const names = affected.map((b) => `"${b.bundle_name}"`).join(", ");
@@ -584,19 +584,19 @@ function MenuItemsTab() {
 
   const openEdit = (p: Product) => {
     setEditing(p);
-    setHasVariants((p.ProductVariants?.length ?? 0) > 1);
+    setHasVariants((p.variants?.length ?? 0) > 1);
     if (imagePreview.startsWith("blob:")) URL.revokeObjectURL(imagePreview);
     setImageFile(null);
     setImagePreview(getMediaUrl(p.image_url) ?? "");
     if (imageInputRef.current) imageInputRef.current.value = "";
 
-    const variants = p.ProductVariants?.length
-      ? p.ProductVariants.map((v) => ({
+    const variants = p.variants?.length
+      ? p.variants.map((v) => ({
           variant_name: v.variant_name,
           price: Number(v.price),
           overhead_cost: Number(v.overhead_cost),
-          ingredients: v.VariantIngredients?.length
-            ? v.VariantIngredients.map((vi) => ({
+          ingredients: v.ingredients?.length
+            ? v.ingredients.map((vi) => ({
                 ingredient_id: vi.raw_material_id,
                 qty: Number(vi.quantity),
               }))
@@ -684,10 +684,10 @@ function MenuItemsTab() {
 
   // ── Helper: compute cost summary for a product card ─────────────────────────
   const getProductCostSummary = (p: Product) => {
-    const vars = p.ProductVariants ?? [];
+    const vars = p.variants ?? [];
     if (vars.length === 0) return null;
     const firstVar = vars[0];
-    const ingCost = (firstVar.VariantIngredients ?? []).reduce((sum, vi) => {
+    const ingCost = (firstVar.ingredients ?? []).reduce((sum, vi) => {
       const mat = ingredientMap[String(vi.raw_material_id)];
       return sum + Number(vi.quantity || 0) * Number(mat?.cost_per_unit || 0);
     }, 0);
@@ -752,7 +752,7 @@ function MenuItemsTab() {
         <div className="space-y-3">
           {filtered.map((p) => {
             const costSummary = getProductCostSummary(p);
-            const varCount = p.ProductVariants?.length ?? 0;
+            const varCount = p.variants?.length ?? 0;
             return (
               <div
                 key={p.id}
@@ -780,7 +780,7 @@ function MenuItemsTab() {
                       <div className="flex items-center gap-2 flex-wrap">
                         <span className="font-semibold text-gray-900">{p.product_name}</span>
                         <Badge variant="default">
-                          {p.Category?.category_name || `Kat #${p.category_id}`}
+                          {p.category?.category_name || `Kat #${p.category_id}`}
                         </Badge>
                         <Badge variant={p.status === "available" ? "success" : "danger"}>
                           {p.status === "available" ? "Tersedia" : "Habis"}
@@ -846,10 +846,10 @@ function MenuItemsTab() {
                 {/* Expanded detail */}
                 {expanded === p.id && (
                   <div className="border-t border-gray-100 px-5 py-4 bg-gray-50">
-                    {p.ProductVariants && p.ProductVariants.length > 0 ? (
+                    {p.variants && p.variants.length > 0 ? (
                       <div className="space-y-4">
-                        {p.ProductVariants.map((v) => {
-                          const vIngCost = (v.VariantIngredients ?? []).reduce(
+                        {p.variants.map((v) => {
+                          const vIngCost = (v.ingredients ?? []).reduce(
                             (sum, vi) => {
                               const mat = ingredientMap[String(vi.raw_material_id)];
                               return sum + Number(vi.quantity || 0) * Number(mat?.cost_per_unit || 0);
@@ -876,11 +876,11 @@ function MenuItemsTab() {
                                   </p>
                                 </div>
                               </div>
-                              {v.VariantIngredients && v.VariantIngredients.length > 0 && (
+                              {v.ingredients && v.ingredients.length > 0 && (
                                 <div className="border-t pt-3">
                                   <p className="text-xs font-medium text-gray-500 mb-2">BAHAN:</p>
                                   <div className="grid grid-cols-2 gap-2">
-                                    {v.VariantIngredients.map((vi) => {
+                                    {v.ingredients.map((vi) => {
                                       const mat = vi.RawMaterial || ingredientMap[String(vi.raw_material_id)];
                                       return (
                                         <div
