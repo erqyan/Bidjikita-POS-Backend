@@ -127,12 +127,41 @@ export const createProduct = async (req: Request, res: Response) => {
 };
 
 // ── GET ALL PRODUCTS ───────────────────────────────────────────────────────
-export const getProducts = async (_req: Request, res: Response) => {
+export const getProducts = async (req: Request, res: Response) => {
   try {
+    const simple = req.query.simple === 'true';
+    const include = simple
+      ? { category: true, variants: true }
+      : productInclude;
+
     const products = await prisma.product.findMany({
-      include: productInclude,
+      include,
       orderBy: { product_name: 'asc' },
     });
+
+    if (simple) {
+      const enriched = products.map((p) => {
+        const plainVariants = p.variants.map((v) => ({
+          id: v.id,
+          variant_name: v.variant_name,
+          price: v.price,
+          overhead_cost: v.overhead_cost,
+          product_id: v.product_id,
+          createdAt: v.createdAt,
+          updatedAt: v.updatedAt,
+          VariantIngredients: [],
+        }));
+        return {
+          ...p,
+          Category: p.category,
+          category: undefined,
+          ProductVariants: plainVariants,
+          variants: undefined,
+          low_stock: false,
+        };
+      });
+      return res.json(enriched);
+    }
 
     // Enrich each product with a low_stock flag and map to old field names
     const enriched = products.map((p) => {

@@ -1,94 +1,65 @@
 import prisma from '../lib/prisma';
 
 /**
- * Deducts raw material stock for one order line.
- *
- * Each selected variant directly owns its ingredient list (VariantIngredient).
- * We sum up the quantities across all selected variants, multiply by order quantity,
- * and deduct from each RawMaterial's stock.
+ * Deducts raw material stock for one order line — batched in a single transaction.
  */
 export async function reduceStock(product_id: number, variantIds: number[], quantity: number): Promise<void> {
-  const ids = Array.isArray(variantIds) ? variantIds : [];
-
-  // Look up product name for the log
-  const product = await prisma.product.findUnique({
-    where: { id: product_id },
-    select: { product_name: true },
-  });
-  const productName = product?.product_name || `Product #${product_id}`;
+  const ids = [...(Array.isArray(variantIds) ? variantIds : [])];
 
   if (ids.length === 0) {
-    // No variant selected — find the default variant for this product
     const defaultVariant = await prisma.productVariant.findFirst({
       where: { product_id },
       orderBy: { id: 'asc' },
+      select: { id: true },
     });
-    if (defaultVariant) {
-      ids.push(defaultVariant.id);
-    } else {
-      throw new Error(`No variant found for product ${product_id}`);
-    }
+    if (!defaultVariant) throw new Error('No variant found for product ' + product_id);
+    ids.push(defaultVariant.id);
   }
 
-  // Load variant names for the log
-  const variantModels = await prisma.productVariant.findMany({
-    where: { id: { in: ids } },
-    select: { variant_name: true },
-  });
-  const variantNames = variantModels.map((v) => v.variant_name).filter(Boolean).join(', ');
-
-  // Load all ingredients for all selected variants
+  // Single query: all ingredients with raw materials for all variants at once
   const ingredients = await prisma.variantIngredient.findMany({
     where: { variant_id: { in: ids } },
-    include: { rawMaterial: true },
+    include: { rawMaterial: { select: { id: true, material_name: true, unit: true, stock: true } } },
   });
 
   if (ingredients.length === 0) {
-    throw new Error(`No ingredients found for variant(s) ${ids.join(', ')}`);
+    throw new Error('No ingredients found for variant(s) ' + ids.join(', '));
   }
 
   // Aggregate quantity per raw material
-  const usageMap: Record<number, number> = {};
+  const usageMap = new Map<number, { used: number; name: string; unit: string; stock: number }>();
   for (const ing of ingredients) {
-    usageMap[ing.raw_material_id] = (usageMap[ing.raw_material_id] || 0) + Number(ing.quantity);
+    const rm = ing.rawMaterial;
+    const existing = usageMap.get(rm.id);
+    const qty = Number(ing.quantity);
+    if (existing) {
+      existing.used += qty * quantity;
+    } else {
+      usageMap.set(rm.id, {
+        used: qty * quantity,
+        name: rm.material_name,
+        unit: rm.unit,
+        stock: Number(rm.stock),
+      });
+    }
   }
 
-  // Deduct stock for each raw material
-  for (const [rawMaterialIdStr, perServingQty] of Object.entries(usageMap)) {
-    const rawMaterialId = Number(rawMaterialIdStr);
-    const material = await prisma.rawMaterial.findUnique({ where: { id: rawMaterialId } });
-    if (!material) {
-      throw new Error(`Raw material ${rawMaterialId} not found`);
-    }
-
-    const usedStock = perServingQty * quantity;
-    const currentStock = Number(material.stock);
-
-    if (currentStock < usedStock) {
+  // Check stock before updating
+  for (const [id, data] of usageMap) {
+    if (data.stock < data.used) {
       throw new Error(
-        `Insufficient stock for "${material.material_name}" (need ${usedStock} ${material.unit}, have ${currentStock})`,
+        'Insufficient stock for "' + data.name + '" (need ' + data.used + ' ' + data.unit + ', have ' + data.stock + ')',
       );
     }
-
-    const oldStock = currentStock;
-    const newStockVal = oldStock - usedStock;
-
-    await prisma.rawMaterial.update({
-      where: { id: rawMaterialId },
-      data: { stock: newStockVal },
-    });
-
-    // Log the deduction
-    await prisma.ingredientLog.create({
-      data: {
-        raw_material_id: material.id,
-        material_name: material.material_name,
-        previous_stock: oldStock,
-        new_stock: newStockVal,
-        quantity_change: -usedStock,
-        change_type: 'order_deduction',
-        notes: `Pesanan: ${productName}${variantNames ? ' (' + variantNames + ')' : ''} × ${quantity}`,
-      },
-    });
   }
+
+  // Batch all updates in a single transaction
+  await prisma.$transaction(
+    Array.from(usageMap.entries()).map(([rawMaterialId, data]) => {
+      return prisma.rawMaterial.update({
+        where: { id: rawMaterialId },
+        data: { stock: data.stock - data.used },
+      });
+    }),
+  );
 }
