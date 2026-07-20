@@ -1,4 +1,6 @@
 // Seeder script — generates dummy transactions from June 1 to July 31, 2026
+// First resets stock levels so orders don't fail
+
 const BASE = 'https://bidjikita-pos-api-production-2740.up.railway.app/api';
 
 async function main() {
@@ -13,6 +15,7 @@ async function main() {
   const auth = { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' };
   console.log('Logged in');
 
+  // Step 1: Fetch products
   const prodRes = await fetch(`${BASE}/products`, { headers: { Authorization: `Bearer ${token}` } });
   const products = await prodRes.json();
   if (products.length === 0) throw new Error('No products found');
@@ -28,10 +31,31 @@ async function main() {
   }
   console.log(`Found ${items.length} items`);
 
+  // Step 2: Restock raw materials so orders don't fail
+  console.log('Restocking raw materials...');
+  const matRes = await fetch(`${BASE}/raw-materials`, { headers: { Authorization: `Bearer ${token}` } });
+  const materials = await matRes.json();
+  for (const m of materials) {
+    const newStock = Math.max(Number(m.stock), 50000);
+    await fetch(`${BASE}/raw-materials/${m.id}`, {
+      method: 'PUT',
+      headers: auth,
+      body: JSON.stringify({
+        material_name: m.material_name,
+        unit: m.unit,
+        stock: newStock,
+        minimum_stock: Number(m.minimum_stock),
+        cost_per_unit: Number(m.cost_per_unit),
+      }),
+    });
+  }
+  console.log(`Restocked ${materials.length} materials`);
+
+  // Step 3: Generate orders with transactions
   const startDate = new Date('2026-06-01T08:00:00Z');
   const endDate = new Date('2026-07-31T22:00:00Z');
   const payMethods = ['cash', 'qris'];
-  let total = 0, rev = 0;
+  let total = 0, rev = 0, failed = 0;
 
   for (let d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 1)) {
     const n = 8 + Math.floor(Math.random() * 8);
@@ -51,7 +75,7 @@ async function main() {
 
       const orRes = await fetch(`${BASE}/orders`, { method: 'POST', headers: auth, body: JSON.stringify({ notes: '', items: orderItems }) });
       const or = await orRes.json();
-      if (!or || !or.id) continue;
+      if (!or || !or.id) { failed++; continue; }
 
       await fetch(`${BASE}/transactions`, {
         method: 'POST',
@@ -73,8 +97,9 @@ async function main() {
   }
 
   console.log('\n----------------------------');
-  console.log(`Orders: ${total}`);
-  console.log(`Revenue: Rp ${rev.toLocaleString('id-ID')}`);
+  console.log(`Orders created: ${total}`);
+  console.log(`Failed:         ${failed}`);
+  console.log(`Revenue:        Rp ${rev.toLocaleString('id-ID')}`);
   console.log('----------------------------');
 }
 
