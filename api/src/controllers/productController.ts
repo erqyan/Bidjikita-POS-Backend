@@ -164,11 +164,11 @@ export const getProducts = async (req: Request, res: Response) => {
     }
 
     // Enrich each product with a low_stock flag and map to old field names
-    const enriched = (products as any[]).map((p) => {
+    const enriched = (products as any[]).map((p: any) => {
       let lowStock = false;
-      const variants = p.variants.map((v) => {
+      const variants = p.variants.map((v: any) => {
         // Rename ingredients -> VariantIngredients, rawMaterial -> RawMaterial
-        const ingredients = v.ingredients.map((ing) => ({
+        const ingredients = v.ingredients.map((ing: any) => ({
           ...ing,
           RawMaterial: ing.rawMaterial,
           rawMaterial: undefined,
